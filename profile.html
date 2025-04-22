@@ -12,7 +12,7 @@
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
-        <a href="profile.html">Your Profile</a>
+        <a href="profile.html">Profile</a>
         <a href="people.html">People</a>
         <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
         <a href="login.html" id="loginLink">Login</a>
@@ -41,6 +41,11 @@
         </div>
 
         <button id="editBioBtn" onclick="showBioEditor()">Edit Bio</button>
+      </div>
+
+      <div class="section-box">
+        <h2>Friend Requests</h2>
+        <div id="requestList"><em>Loading...</em></div>
       </div>
     </main>
 
@@ -108,7 +113,56 @@
       if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
 
-    document.addEventListener('DOMContentLoaded', updateNavLinks);
+    function loadFriendRequests() {
+      const currentUser = localStorage.getItem('profileUsername');
+      const friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
+      const friends = JSON.parse(localStorage.getItem('friends')) || {};
+      const listDiv = document.getElementById("requestList");
+
+      const requests = friendRequests[currentUser] || [];
+
+      if (requests.length === 0) {
+        listDiv.innerHTML = "<p>No friend requests.</p>";
+        return;
+      }
+
+      listDiv.innerHTML = "";
+      requests.forEach(fromUser => {
+        const item = document.createElement("div");
+        item.innerHTML = `
+          <strong>${fromUser}</strong>
+          <button onclick="acceptFriend('${fromUser}')">Accept</button>
+        `;
+        listDiv.appendChild(item);
+      });
+    }
+
+    function acceptFriend(fromUser) {
+      const currentUser = localStorage.getItem('profileUsername');
+      let friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
+      let friends = JSON.parse(localStorage.getItem('friends')) || {};
+
+      // Remove request
+      friendRequests[currentUser] = (friendRequests[currentUser] || []).filter(name => name !== fromUser);
+      localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
+
+      // Add to both users' friends list
+      if (!friends[currentUser]) friends[currentUser] = [];
+      if (!friends[fromUser]) friends[fromUser] = [];
+
+      if (!friends[currentUser].includes(fromUser)) friends[currentUser].push(fromUser);
+      if (!friends[fromUser].includes(currentUser)) friends[fromUser].push(currentUser);
+
+      localStorage.setItem('friends', JSON.stringify(friends));
+
+      alert("You and " + fromUser + " are now friends!");
+      loadFriendRequests();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavLinks();
+      loadFriendRequests();
+    });
   </script>
 </body>
 </html>
