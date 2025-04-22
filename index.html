@@ -6,38 +6,41 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <div class="container">
+  <div class="page-wrapper">
+    <header>
       <h1>PixelGame</h1>
       <nav>
-        <a href="index.html">Home</a> |
-        <a href="games.html">Games</a> |
-        <a href="#">Profile</a> |
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="#">Profile</a>
         <a href="#">Store</a>
       </nav>
-    </div>
-  </header>
+    </header>
 
-  <main>
-    <div class="container">
-      <section class="welcome">
+    <main>
+      <div class="section-box">
         <h2>Welcome to PixelGame!</h2>
-        <p>The place to play and create games with friends!</p>
+        <p>This is your hub for classic fun and imagination. Play games, build worlds, and relive the good ol' days!</p>
         <button onclick="launchGame()">Play Featured Game</button>
-      </section>
+      </div>
 
-      <section class="about">
+      <div class="section-box">
         <h2>About PixelGame</h2>
-        <p>PixelGame is a platform where you can discover, create, and share your own games. It's built for players who love creativity and exploration!</p>
-      </section>
-    </div>
-  </main>
+        <p>PixelGame is inspired by the early days of Roblox, when everything felt like magic and blocks ruled the world. We’re bringing that vibe back, one pixel at a time.</p>
+      </div>
 
-  <footer>
-    <div class="container">
-      <p>© 2025 PixelGame. All rights reserved.</p>
-    </div>
-  </footer>
+      <div class="section-box">
+        <h2>Featured Game</h2>
+        <img src="https://via.placeholder.com/400x200?text=Classic+Adventure" alt="Featured Game" class="featured-img">
+        <p><strong>Classic Adventure:</strong> Explore blocky lands and discover secrets.</p>
+        <button>Play Now</button>
+      </div>
+    </main>
+
+    <footer>
+      <p>© 2025 PixelGame. A tribute to the classic era of Roblox.</p>
+    </footer>
+  </div>
 
   <script src="script.js"></script>
 </body>
