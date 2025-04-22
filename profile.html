@@ -60,6 +60,40 @@
       document.getElementById('displayBio').innerText = bio || 'No bio set yet.';
     }
   </script>
+
+
+
+  <script>
+  // Function to check login status and toggle navigation links
+  function updateNavLinks() {
+    const username = localStorage.getItem('profileUsername');
+    const loginLink = document.getElementById('loginLink');
+    const logoutLink = document.getElementById('logoutLink');
+
+    if (username) {
+      // User is logged in
+      loginLink.style.display = 'none';
+      logoutLink.style.display = 'inline';
+    } else {
+      // User is not logged in
+      loginLink.style.display = 'inline';
+      logoutLink.style.display = 'none';
+    }
+  }
+
+  // Logout function
+  function logout() {
+    localStorage.removeItem('profileUsername');
+    localStorage.removeItem('profileBio');
+    // Optionally, remove other related items
+    updateNavLinks();
+    window.location.href = 'login.html';
+  }
+
+  // Initialize navigation links on page load
+  document.addEventListener('DOMContentLoaded', updateNavLinks);
+</script>
+
 </body>
 </html>
 
