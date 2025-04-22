@@ -39,16 +39,31 @@
   </div>
 
   <script>
-    function saveProfile() {
-      const username = document.getElementById('username').value;
-      const bio = document.getElementById('bio').value;
+  function saveProfile() {
+    const username = document.getElementById('username').value.trim();
+    const bio = document.getElementById('bio').value.trim();
 
-      localStorage.setItem('profileUsername', username);
-      localStorage.setItem('profileBio', bio);
+    // Load existing registered usernames
+    let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
 
-      alert('Profile Saved! Go to your Profile page.');
-      window.location.href = 'profile.html';
+    // Check if username already exists
+    if (users.includes(username)) {
+      alert('Username already taken! Please choose a different one.');
+      return;
     }
-  </script>
+
+    // Otherwise, save new username and bio
+    localStorage.setItem('profileUsername', username);
+    localStorage.setItem('profileBio', bio);
+
+    // Add username to registered users list
+    users.push(username);
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+    alert('Profile Saved! Go to your Profile page.');
+    window.location.href = 'profile.html';
+  }
+</script>
+
 </body>
 </html>
