@@ -21,7 +21,6 @@
     </header>
 
     <main>
-      <!-- Top profile box -->
       <div class="section-box profile-top">
         <img src="https://via.placeholder.com/150x150?text=Avatar" alt="Avatar" class="avatar">
         <div class="profile-info">
@@ -30,11 +29,12 @@
         </div>
       </div>
 
-      <!-- Bio box -->
       <div class="section-box">
         <h2>About Me</h2>
         <p id="profileBio">Loading bio...</p>
       </div>
+
+      <div class="section-box" id="friendRequestBox" style="text-align: center;"></div>
     </main>
 
     <footer>
@@ -59,6 +59,50 @@
       if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
 
+    function sendFriendRequest() {
+      const currentUser = localStorage.getItem('profileUsername');
+      const targetUser = localStorage.getItem('viewingUser');
+
+      if (!currentUser || currentUser === targetUser) {
+        alert("You cannot friend yourself or you're not logged in.");
+        return;
+      }
+
+      const allRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
+      if (!allRequests[targetUser]) allRequests[targetUser] = [];
+
+      if (allRequests[targetUser].includes(currentUser)) {
+        alert("You've already sent a friend request.");
+        return;
+      }
+
+      allRequests[targetUser].push(currentUser);
+      localStorage.setItem('friendRequests', JSON.stringify(allRequests));
+
+      alert("Friend request sent to " + targetUser + "!");
+      renderFriendButton(); // Re-render button
+    }
+
+    function renderFriendButton() {
+      const currentUser = localStorage.getItem('profileUsername');
+      const targetUser = localStorage.getItem('viewingUser');
+      const box = document.getElementById("friendRequestBox");
+
+      if (!currentUser || currentUser === targetUser) {
+        box.innerHTML = "";
+        return;
+      }
+
+      const allRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
+      const sent = (allRequests[targetUser] || []).includes(currentUser);
+
+      if (sent) {
+        box.innerHTML = "<em>Friend request sent!</em>";
+      } else {
+        box.innerHTML = `<button onclick="sendFriendRequest()">Send Friend Request</button>`;
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       updateNavLinks();
 
@@ -68,9 +112,11 @@
       if (!username || !userData[username]) {
         document.getElementById("profileUsername").innerText = "User Not Found";
         document.getElementById("profileBio").innerText = "This user may not exist.";
+        document.getElementById("friendRequestBox").innerHTML = "";
       } else {
         document.getElementById("profileUsername").innerText = username;
         document.getElementById("profileBio").innerText = userData[username].bio || "No bio available.";
+        renderFriendButton();
       }
     });
   </script>
