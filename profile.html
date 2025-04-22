@@ -11,6 +11,7 @@
     <header>
       <h1>PixelGame</h1>
 <nav>
+  <a href="login.html">Login</a>
   <a href="index.html">Home</a>
   <a href="games.html">Games</a>
   <a href="profile.html">Profile</a>
@@ -85,5 +86,12 @@
   </div>
 
   <script src="script.js"></script>
+  
+  <script>
+  // Load saved profile info
+  document.getElementById('displayUsername').innerText = localStorage.getItem('profileUsername') || 'Guest';
+  document.getElementById('displayBio').innerText = localStorage.getItem('profileBio') || 'No bio set yet. Go to Login page to create one!';
+</script>
+
 </body>
 </html>
