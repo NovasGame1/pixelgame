@@ -1,67 +1,74 @@
-/* (keep everything you already have above) */
-
-/* Home Page Hero Section */
-.home-main {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-}
-
+/* Hero Section */
 .hero {
-  background: linear-gradient(135deg, #ffffff, #e0f7ff);
-  padding: 60px 40px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  background-color: #00aaff;
+  color: white;
+  padding: 80px 20px;
   text-align: center;
-  max-width: 600px;
-  animation: fadeIn 1s ease-in-out;
 }
 
 .hero h2 {
-  font-size: 2.8em;
+  font-size: 3em;
   margin-bottom: 20px;
 }
 
-.hero .highlight {
-  color: #00aaff;
+.hero p {
+  font-size: 1.5em;
+  margin-bottom: 30px;
 }
 
-.hero p {
-  font-size: 1.3em;
-  margin-bottom: 30px;
+/* About Section */
+.about {
+  padding: 60px 20px;
+  background-color: #ffffff;
+}
+
+.about h2 {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+}
+
+.about p {
+  font-size: 1.2em;
+  max-width: 800px;
+  margin: 0 auto;
   color: #555;
 }
 
-/* Button (already styled but slightly polish) */
-button {
-  padding: 14px 30px;
-  font-size: 1.3em;
-  background-color: #00aaff;
-  border: none;
+/* Featured Game Section */
+.featured {
+  padding: 60px 20px;
+  background-color: #f4f4f4;
+}
+
+.featured h2 {
+  font-size: 2.5em;
+  margin-bottom: 40px;
+}
+
+.featured-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.featured-card img {
+  width: 100%;
+  max-width: 600px;
   border-radius: 10px;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
 }
 
-button:hover {
-  background-color: #0088cc;
-  transform: translateY(-3px);
-}
-
-/* Footer styles */
-footer {
-  background-color: #ffffff;
-  padding: 15px;
+.featured-info {
   text-align: center;
-  font-size: 0.9em;
-  color: #666;
-  box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Little fade-in animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+.featured-info h3 {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+.featured-info p {
+  font-size: 1.2em;
+  margin-bottom: 20px;
 }
