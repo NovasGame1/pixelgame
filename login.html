@@ -121,19 +121,6 @@
 
 
 
-function updateNavLinks() {
-  const username = localStorage.getItem('profileUsername');
-  const isAdmin = username === "Nova";
-  document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
-  document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
-
-  const adminBtn = document.getElementById("adminBtn");
-  if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
-}
-
-
-  
-
   
 </body>
 </html>
