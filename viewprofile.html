@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PixelGame - View Profile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header>
+      <h1>Player Profile</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Your Profile</a>
+        <a href="people.html">People</a>
+        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="section-box">
+        <h2 id="profileUsername">Unknown</h2>
+        <p><strong>Bio:</strong> <span id="profileBio">No bio available.</span></p>
+      </div>
+    </main>
+
+    <footer>
+      © 2025 PixelGame.
+    </footer>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
+      updateNavLinks();
+      window.location.href = 'login.html';
+    }
+
+    function updateNavLinks() {
+      const username = localStorage.getItem('profileUsername');
+      const isAdmin = username === "Nova";
+      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
+      const adminBtn = document.getElementById('adminBtn');
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavLinks();
+
+      const username = localStorage.getItem("viewingUser");
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+
+      if (!username || !userData[username]) {
+        document.getElementById("profileUsername").innerText = "User Not Found";
+        document.getElementById("profileBio").innerText = "This user may not exist.";
+      } else {
+        document.getElementById("profileUsername").innerText = username;
+        document.getElementById("profileBio").innerText = userData[username].bio || "No bio available.";
+      }
+    });
+  </script>
+</body>
+</html>
