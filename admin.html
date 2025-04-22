@@ -13,6 +13,7 @@
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
         <a href="profile.html">Profile</a>
+        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
         <a href="login.html" id="loginLink">Login</a>
         <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
       </nav>
@@ -34,7 +35,6 @@
     const adminName = "Nova";
     const currentUser = localStorage.getItem("profileUsername");
 
-    // Protect the page
     if (currentUser !== adminName) {
       alert("Access denied. You must be an admin.");
       window.location.href = "login.html";
@@ -49,8 +49,13 @@
 
     function updateNavLinks() {
       const username = localStorage.getItem('profileUsername');
-      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
-      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
+      const isAdmin = username === "Nova";
+      const loginLink = document.getElementById('loginLink');
+      const logoutLink = document.getElementById('logoutLink');
+      const adminBtn = document.getElementById("adminBtn");
+      if (loginLink) loginLink.style.display = username ? 'none' : 'inline';
+      if (logoutLink) logoutLink.style.display = username ? 'inline' : 'none';
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -67,21 +72,57 @@
 
       users.forEach(username => {
         const user = userData[username] || {};
-        const userBox = document.createElement("div");
-        userBox.style.border = "1px solid #aaa";
-        userBox.style.padding = "10px";
-        userBox.style.marginBottom = "10px";
-        userBox.style.background = "#fff";
+        const box = document.createElement("div");
+        box.style.border = "1px solid #aaa";
+        box.style.padding = "10px";
+        box.style.marginBottom = "10px";
+        box.style.background = "#fff";
 
-        userBox.innerHTML = `
-          <strong>Username:</strong> ${username}<br>
-          <strong>Bio:</strong> ${user.bio || "N/A"}<br>
+        box.innerHTML = `
+          <strong>Username:</strong> <input value="${username}" id="name-${username}" /><br>
+          <strong>Password:</strong> <input value="${user.password || ''}" id="pass-${username}" type="text" /><br>
+          <strong>Bio:</strong> <textarea rows="2" cols="40" id="bio-${username}">${user.bio || ''}</textarea><br>
+          <button onclick="updateUser('${username}')">Save Changes</button>
           <button onclick="deleteUser('${username}')">Delete</button>
         `;
 
-        listDiv.appendChild(userBox);
+        listDiv.appendChild(box);
       });
     });
+
+    function updateUser(oldUsername) {
+      const users = JSON.parse(localStorage.getItem("registeredUsers")) || [];
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+
+      const newName = document.getElementById(`name-${oldUsername}`).value.trim();
+      const newPass = document.getElementById(`pass-${oldUsername}`).value.trim();
+      const newBio = document.getElementById(`bio-${oldUsername}`).value.trim();
+
+      if (!newName || !newPass) {
+        alert("Username and password are required.");
+        return;
+      }
+
+      if (newName !== oldUsername && users.includes(newName)) {
+        alert("That username is already taken.");
+        return;
+      }
+
+      // Rename in users list
+      const newUsers = users.map(u => u === oldUsername ? newName : u);
+      localStorage.setItem("registeredUsers", JSON.stringify(newUsers));
+
+      // Update userData
+      userData[newName] = {
+        password: newPass,
+        bio: newBio
+      };
+      if (newName !== oldUsername) delete userData[oldUsername];
+      localStorage.setItem("userData", JSON.stringify(userData));
+
+      alert("User updated successfully.");
+      location.reload();
+    }
 
     function deleteUser(username) {
       if (!confirm(`Are you sure you want to delete "${username}"?`)) return;
