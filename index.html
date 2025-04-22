@@ -9,88 +9,56 @@
   <div class="page-wrapper">
     <header>
       <h1>PixelGame</h1>
-<nav>
-  <a href="index.html">Home</a>
-  <a href="games.html">Games</a>
-  <a href="profile.html">Profile</a>
-  <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
-  <a href="login.html" id="loginLink">Login</a>
-  <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
-</nav>
-
-
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Profile</a>
+        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+      </nav>
     </header>
 
     <main>
-      <div class="section-box">
+      <div class="section-box home-content">
         <h2>Welcome to PixelGame!</h2>
         <p>This is your hub for classic fun and imagination. Play games, build worlds, and relive the good ol' days!</p>
         <button onclick="launchGame()">Play Featured Game</button>
       </div>
-
-      <div class="section-box">
-        <h2>About PixelGame</h2>
-        <p>PixelGame is inspired by the early days of Roblox, when everything felt like magic and blocks ruled the world. We’re bringing that vibe back, one pixel at a time.</p>
-      </div>
-
-      <div class="section-box">
-        <h2>Featured Game</h2>
-        <img src="https://via.placeholder.com/400x200?text=Classic+Adventure" alt="Featured Game" class="featured-img">
-        <p><strong>Classic Adventure:</strong> Explore blocky lands and discover secrets.</p>
-        <button>Play Now</button>
-      </div>
     </main>
 
     <footer>
-      <p>© 2025 PixelGame. A tribute to the classic era of Roblox.</p>
+      © 2025 PixelGame.
     </footer>
   </div>
 
-  <script src="script.js"></script>
-
-
-function updateNavLinks() {
-  const username = localStorage.getItem('profileUsername');
-  const isAdmin = username === "Nova";
-  document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
-  document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
-
-  const adminBtn = document.getElementById("adminBtn");
-  if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
-}
-
-
-
   <script>
-  // Function to check login status and toggle navigation links
-  function updateNavLinks() {
-    const username = localStorage.getItem('profileUsername');
-    const loginLink = document.getElementById('loginLink');
-    const logoutLink = document.getElementById('logoutLink');
+    // Shows/hides Login, Logout, and Admin Panel buttons
+    function updateNavLinks() {
+      const username = localStorage.getItem('profileUsername');
+      const isAdmin = username === "Nova";
 
-    if (username) {
-      // User is logged in
-      loginLink.style.display = 'none';
-      logoutLink.style.display = 'inline';
-    } else {
-      // User is not logged in
-      loginLink.style.display = 'inline';
-      logoutLink.style.display = 'none';
+      const loginLink = document.getElementById('loginLink');
+      const logoutLink = document.getElementById('logoutLink');
+      const adminBtn = document.getElementById('adminBtn');
+
+      if (loginLink) loginLink.style.display = username ? 'none' : 'inline';
+      if (logoutLink) logoutLink.style.display = username ? 'inline' : 'none';
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
-  }
 
-  // Logout function
-  function logout() {
-    localStorage.removeItem('profileUsername');
-    localStorage.removeItem('profileBio');
-    // Optionally, remove other related items
-    updateNavLinks();
-    window.location.href = 'login.html';
-  }
+    function logout() {
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
+      updateNavLinks();
+      window.location.href = 'login.html';
+    }
 
-  // Initialize navigation links on page load
-  document.addEventListener('DOMContentLoaded', updateNavLinks);
-</script>
+    function launchGame() {
+      alert("Loading game... (Coming soon!)");
+    }
 
+    document.addEventListener('DOMContentLoaded', updateNavLinks);
+  </script>
 </body>
 </html>
