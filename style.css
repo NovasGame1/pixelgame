@@ -90,30 +90,69 @@ footer {
 }
 
 
-.profile-section {
+/* ---------- PROFILE PAGE EXTRAS ---------- */
+.profile-top {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 30px;
+  gap: 25px;
+  text-align: left;
 }
 
-.profile-avatar {
+.avatar {
   width: 150px;
   height: 150px;
-  border: 2px solid #333;
-  margin: 20px 0;
+  border: 2px solid #999;
 }
 
 .profile-info {
-  text-align: left;
-  background-color: #f9f9f9;
-  padding: 20px;
-  border: 1px solid #aaa;
-  width: 100%;
-  max-width: 500px;
-  font-size: 1.1em;
+  flex: 1;
 }
 
-.profile-info p {
-  margin: 10px 0;
+.username {
+  font-size: 1.8em;
+  margin-bottom: 8px;
+}
+
+.join-date {
+  font-size: 0.95em;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.stat-grid {
+  display: flex;
+  gap: 40px;
+  margin-top: 10px;
+}
+
+.stat {
+  text-align: center;
+  font-size: 0.95em;
+}
+
+.stat-number {
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #c42b1c;
+}
+
+/* Friends section */
+.friends-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.friend-card {
+  width: 100px;
+  text-align: center;
+}
+
+.friend-card img {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #999;
+  margin-bottom: 5px;
 }
