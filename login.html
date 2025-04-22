@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PixelGame - Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header>
+      <h1>PixelGame</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Profile</a>
+        <a href="login.html">Login</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="section-box">
+        <h2>Login / Set Profile</h2>
+
+        <form onsubmit="saveProfile(); return false;">
+          <label for="username">Username:</label><br>
+          <input type="text" id="username" placeholder="Enter your username" required><br><br>
+
+          <label for="bio">Bio:</label><br>
+          <textarea id="bio" placeholder="Tell us about yourself..." rows="5" cols="40" required></textarea><br><br>
+
+          <button type="submit">Save Profile</button>
+        </form>
+      </div>
+    </main>
+
+    <footer>
+      © 2025 PixelGame.
+    </footer>
+  </div>
+
+  <script>
+    function saveProfile() {
+      const username = document.getElementById('username').value;
+      const bio = document.getElementById('bio').value;
+
+      localStorage.setItem('profileUsername', username);
+      localStorage.setItem('profileBio', bio);
+
+      alert('Profile Saved! Go to your Profile page.');
+      window.location.href = 'profile.html';
+    }
+  </script>
+</body>
+</html>
