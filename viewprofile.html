@@ -80,7 +80,7 @@
       localStorage.setItem('friendRequests', JSON.stringify(allRequests));
 
       alert("Friend request sent to " + targetUser + "!");
-      renderFriendButton(); // Re-render button
+      renderFriendButton();
     }
 
     function renderFriendButton() {
@@ -94,9 +94,14 @@
       }
 
       const allRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
-      const sent = (allRequests[targetUser] || []).includes(currentUser);
+      const alreadyRequested = (allRequests[targetUser] || []).includes(currentUser);
 
-      if (sent) {
+      const allFriends = JSON.parse(localStorage.getItem('friends')) || {};
+      const isAlreadyFriends = (allFriends[currentUser] || []).includes(targetUser);
+
+      if (isAlreadyFriends) {
+        box.innerHTML = "<em>You are already friends!</em>";
+      } else if (alreadyRequested) {
         box.innerHTML = "<em>Friend request sent!</em>";
       } else {
         box.innerHTML = `<button onclick="sendFriendRequest()">Send Friend Request</button>`;
