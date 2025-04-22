@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - PixelGame</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+
+    .admin-table th, .admin-table td {
+      border: 1px solid #aaa;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .admin-table th {
+      background-color: #ddd;
+    }
+
+    .admin-controls button {
+      margin: 2px;
+    }
+
+    .section-box textarea {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header>
+      <h1>Admin Panel</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="section-box">
+        <h2>Registered Users</h2>
+        <div id="userTableContainer"></div>
+      </div>
+    </main>
+
+    <footer>
+      © 2025 PixelGame Admin Control
+    </footer>
+  </div>
+
+  <script>
+    const currentUser = localStorage.getItem('profileUsername');
+
+    // 🔐 Only allow Nova to access this page
+    if (currentUser !== 'Nova') {
+      alert('Access Denied. Admins only.');
+      window.location.href = 'login.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
+      updateNavLinks();
+      window.location.href = 'login.html';
+    }
+
+    function updateNavLinks() {
+      const isLoggedIn = !!localStorage.getItem('profileUsername');
+      document.getElementById('loginLink').style.display = isLoggedIn ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = isLoggedIn ? 'inline' : 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavLinks();
+      loadUsers();
+    });
+
+    function loadUsers() {
+      const users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      const userData = JSON.parse(localStorage.getItem('userData')) || {};
+      const container = document.getElementById('userTableContainer');
+
+      if (users.length === 0) {
+        container.innerHTML = "<p>No registered users found.</p>";
+        return;
+      }
+
+      let html = `<table class="admin-table">
+        <tr>
+          <th>Username</th>
+          <th>Bio</th>
+          <th>Password</th>
+          <th>Actions</th>
+        </tr>`;
+
+      users.forEach(user => {
+        const bio = userData[user]?.bio || '—';
+        const pass = userData[user]?.password || '—';
+
+        html += `<tr>
+          <td>${user}</td>
+          <td><textarea onchange="updateBio('${user}', this.value)">${bio}</textarea></td>
+          <td><input type="text" value="${pass}" onchange="updatePassword('${user}', this.value)" /></td>
+          <td class="admin-controls">
+            <button onclick="deleteUser('${user}')">Delete</button>
+          </td>
+        </tr>`;
+      });
+
+      html += `</table>`;
+      container.innerHTML = html;
+    }
+
+    function updateBio(user, newBio) {
+      let userData = JSON.parse(localStorage.getItem('userData')) || {};
+      if (userData[user]) {
+        userData[user].bio = newBio;
+        localStorage.setItem('userData', JSON.stringify(userData));
+        if (localStorage.getItem('profileUsername') === user) {
+          localStorage.setItem('profileBio', newBio);
+        }
+      }
+    }
+
+    function updatePassword(user, newPass) {
+      let userData = JSON.parse(localStorage.getItem('userData')) || {};
+      if (userData[user]) {
+        userData[user].password = newPass;
+        localStorage.setItem('userData', JSON.stringify(userData));
+      }
+    }
+
+    function deleteUser(user) {
+      if (!confirm(`Are you sure you want to delete ${user}? This cannot be undone.`)) return;
+
+      let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      users = users.filter(u => u !== user);
+      localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+      let userData = JSON.parse(localStorage.getItem('userData')) || {};
+      delete userData[user];
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+      // Log them out if they are currently signed in
+      if (localStorage.getItem('profileUsername') === user) {
+        logout();
+      }
+
+      loadUsers();
+    }
+  </script>
+</body>
+</html>
