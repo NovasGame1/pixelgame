@@ -21,6 +21,7 @@
     </header>
 
     <main>
+      <!-- Profile Top -->
       <div class="section-box profile-top">
         <img src="https://via.placeholder.com/150x150?text=Avatar" alt="Avatar" class="avatar">
         <div class="profile-info">
@@ -30,6 +31,7 @@
         </div>
       </div>
 
+      <!-- Bio Section -->
       <div class="section-box">
         <h2>About Me</h2>
         <p id="displayBio">No bio set yet.</p>
@@ -43,9 +45,16 @@
         <button id="editBioBtn" onclick="showBioEditor()">Edit Bio</button>
       </div>
 
+      <!-- Friend Requests -->
       <div class="section-box">
         <h2>Friend Requests</h2>
         <div id="requestList"><em>Loading...</em></div>
+      </div>
+
+      <!-- Friends List -->
+      <div class="section-box">
+        <h2>Your Friends</h2>
+        <div id="friendsList"><em>Loading...</em></div>
       </div>
     </main>
 
@@ -54,60 +63,159 @@
     </footer>
   </div>
 
- <script>
-  // (Leave everything else the same above...)
+  <script>
+    const username = localStorage.getItem('profileUsername');
+    const storedBio = localStorage.getItem('profileBio');
 
-  function loadFriendsList() {
-    const currentUser = localStorage.getItem('profileUsername');
-    const friends = JSON.parse(localStorage.getItem('friends')) || {};
-    const myFriends = friends[currentUser] || [];
-    const container = document.getElementById('friendsList');
-
-    if (myFriends.length === 0) {
-      container.innerHTML = "<p>You don't have any friends yet.</p>";
-      return;
+    if (!username) {
+      window.location.href = 'login.html';
+    } else {
+      document.getElementById('displayUsername').innerText = username;
+      document.getElementById('displayBio').innerText = storedBio || "This user has no bio yet.";
     }
 
-    container.innerHTML = "";
-    myFriends.forEach(friendName => {
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <strong>${friendName}</strong>
-        <button onclick="viewFriend('${friendName}')">View</button>
-        <button onclick="unfriend('${friendName}')">Unfriend</button>
-      `;
-      container.appendChild(div);
+    function logout() {
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
+      updateNavLinks();
+      window.location.href = 'login.html';
+    }
+
+    function updateNavLinks() {
+      const username = localStorage.getItem('profileUsername');
+      const isAdmin = username === "Nova";
+      const loginLink = document.getElementById('loginLink');
+      const logoutLink = document.getElementById('logoutLink');
+      const adminBtn = document.getElementById("adminBtn");
+
+      if (loginLink) loginLink.style.display = username ? 'none' : 'inline';
+      if (logoutLink) logoutLink.style.display = username ? 'inline' : 'none';
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+    }
+
+    function showBioEditor() {
+      document.getElementById('editBioSection').style.display = 'block';
+      document.getElementById('editBioBtn').style.display = 'none';
+      document.getElementById('bioInput').value = localStorage.getItem('profileBio') || '';
+    }
+
+    function cancelEdit() {
+      document.getElementById('editBioSection').style.display = 'none';
+      document.getElementById('editBioBtn').style.display = 'inline';
+    }
+
+    function saveBio() {
+      const newBio = document.getElementById('bioInput').value;
+      localStorage.setItem('profileBio', newBio);
+      document.getElementById('displayBio').innerText = newBio;
+
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      if (registeredUsers.includes(username)) {
+        let userData = JSON.parse(localStorage.getItem('userData')) || {};
+        if (userData[username]) {
+          userData[username].bio = newBio;
+          localStorage.setItem('userData', JSON.stringify(userData));
+        }
+      }
+
+      cancelEdit();
+    }
+
+    function loadFriendRequests() {
+      const currentUser = localStorage.getItem('profileUsername');
+      const friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
+      const listDiv = document.getElementById("requestList");
+
+      const requests = friendRequests[currentUser] || [];
+
+      if (requests.length === 0) {
+        listDiv.innerHTML = "<p>No friend requests.</p>";
+        return;
+      }
+
+      listDiv.innerHTML = "";
+      requests.forEach(fromUser => {
+        const item = document.createElement("div");
+        item.innerHTML = `
+          <strong>${fromUser}</strong>
+          <button onclick="acceptFriend('${fromUser}')">Accept</button>
+        `;
+        listDiv.appendChild(item);
+      });
+    }
+
+    function acceptFriend(fromUser) {
+      const currentUser = localStorage.getItem('profileUsername');
+      let friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
+      let friends = JSON.parse(localStorage.getItem('friends')) || {};
+
+      // Remove request
+      friendRequests[currentUser] = (friendRequests[currentUser] || []).filter(name => name !== fromUser);
+      localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
+
+      // Add to friends lists
+      if (!friends[currentUser]) friends[currentUser] = [];
+      if (!friends[fromUser]) friends[fromUser] = [];
+
+      if (!friends[currentUser].includes(fromUser)) friends[currentUser].push(fromUser);
+      if (!friends[fromUser].includes(currentUser)) friends[fromUser].push(currentUser);
+
+      localStorage.setItem('friends', JSON.stringify(friends));
+
+      alert("You and " + fromUser + " are now friends!");
+      loadFriendRequests();
+      loadFriendsList();
+    }
+
+    function loadFriendsList() {
+      const currentUser = localStorage.getItem('profileUsername');
+      const friends = JSON.parse(localStorage.getItem('friends')) || {};
+      const myFriends = friends[currentUser] || [];
+      const container = document.getElementById('friendsList');
+
+      if (myFriends.length === 0) {
+        container.innerHTML = "<p>You don't have any friends yet.</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+      myFriends.forEach(friendName => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <strong>${friendName}</strong>
+          <button onclick="viewFriend('${friendName}')">View</button>
+          <button onclick="unfriend('${friendName}')">Unfriend</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function viewFriend(name) {
+      localStorage.setItem("viewingUser", name);
+      window.location.href = "viewprofile.html";
+    }
+
+    function unfriend(name) {
+      const currentUser = localStorage.getItem('profileUsername');
+      let friends = JSON.parse(localStorage.getItem('friends')) || {};
+
+      if (friends[currentUser]) {
+        friends[currentUser] = friends[currentUser].filter(f => f !== name);
+      }
+      if (friends[name]) {
+        friends[name] = friends[name].filter(f => f !== currentUser);
+      }
+
+      localStorage.setItem('friends', JSON.stringify(friends));
+      alert(`You and ${name} are no longer friends.`);
+      loadFriendsList();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavLinks();
+      loadFriendRequests();
+      loadFriendsList();
     });
-  }
-
-  function viewFriend(name) {
-    localStorage.setItem("viewingUser", name);
-    window.location.href = "viewprofile.html";
-  }
-
-  function unfriend(name) {
-    const currentUser = localStorage.getItem('profileUsername');
-    let friends = JSON.parse(localStorage.getItem('friends')) || {};
-
-    // Remove each other
-    if (friends[currentUser]) {
-      friends[currentUser] = friends[currentUser].filter(f => f !== name);
-    }
-    if (friends[name]) {
-      friends[name] = friends[name].filter(f => f !== currentUser);
-    }
-
-    localStorage.setItem('friends', JSON.stringify(friends));
-    alert(`You and ${name} are no longer friends.`);
-    loadFriendsList();
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    updateNavLinks();
-    loadFriendRequests();
-    loadFriendsList(); // 👈 Add this call
-  });
-</script>
-
+  </script>
 </body>
 </html>
