@@ -18,24 +18,26 @@
     </header>
 
     <main>
-      <div class="section-box profile-top">
-        <img
-          src="https://via.placeholder.com/150x150?text=Avatar"
-          alt="Avatar"
-          class="avatar"
-        >
+  <div class="section-box profile-top">
+    <img
+      src="https://via.placeholder.com/150x150?text=Avatar"
+      alt="Avatar"
+      class="avatar"
+    >
 
-        <div class="profile-info">
-          <h2 class="username" id="displayUsername">Guest</h2>
-          <p class="join-date">Joined: April 2025</p>
-        </div>
-      </div>
+    <div class="profile-info">
+      <h2 class="username" id="displayUsername">Guest</h2>
+      <p class="join-date">Joined: April 2025</p>
+      <button onclick="logout()" class="logout-button">Logout</button>
+    </div>
+  </div>
 
-      <div class="section-box">
-        <h2>About Me</h2>
-        <p id="displayBio">No bio set yet. Go to the Login page to create one!</p>
-      </div>
-    </main>
+  <div class="section-box">
+    <h2>About Me</h2>
+    <p id="displayBio">No bio set yet. Go to the Login page to create one!</p>
+  </div>
+</main>
+
 
     <footer>
       © 2025 PixelGame.
@@ -58,3 +60,25 @@
   </script>
 </body>
 </html>
+
+<script>
+  // Load Profile Data
+  const username = localStorage.getItem('profileUsername');
+  const bio = localStorage.getItem('profileBio');
+
+  if (username === null) {
+    document.getElementById('displayUsername').innerText = 'Guest';
+    document.getElementById('displayBio').innerText = 'Welcome, Guest! You can set up your profile on the Login page.';
+  } else {
+    document.getElementById('displayUsername').innerText = username;
+    document.getElementById('displayBio').innerText = bio || 'No bio set yet.';
+  }
+
+  // Logout function
+  function logout() {
+    localStorage.removeItem('profileUsername');
+    localStorage.removeItem('profileBio');
+    window.location.href = 'login.html';
+  }
+</script>
+
