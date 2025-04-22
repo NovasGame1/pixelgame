@@ -7,45 +7,36 @@
 </head>
 <body>
   <header>
-    <h1>PixelGame</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="games.html">Games</a>
-      <a href="#">Profile</a>
-      <a href="#">Store</a>
-    </nav>
+    <div class="container">
+      <h1>PixelGame</h1>
+      <nav>
+        <a href="index.html">Home</a> |
+        <a href="games.html">Games</a> |
+        <a href="#">Profile</a> |
+        <a href="#">Store</a>
+      </nav>
+    </div>
   </header>
 
   <main>
-    <!-- Hero Section -->
-    <section class="hero">
-      <h2>Welcome to PixelGame!</h2>
-      <p>The ultimate world of games, creativity, and adventure. Build, play, and explore!</p>
-      <button onclick="launchGame()">Play Featured Game</button>
-    </section>
+    <div class="container">
+      <section class="welcome">
+        <h2>Welcome to PixelGame!</h2>
+        <p>The place to play and create games with friends!</p>
+        <button onclick="launchGame()">Play Featured Game</button>
+      </section>
 
-    <!-- About Section -->
-    <section class="about">
-      <h2>What is PixelGame?</h2>
-      <p>PixelGame is a community-driven platform where you can play exciting games, meet new friends, and create your own adventures. It's your world — start exploring it today!</p>
-    </section>
-
-    <!-- Featured Games Section -->
-    <section class="featured">
-      <h2>Featured Game</h2>
-      <div class="featured-card">
-        <img src="https://via.placeholder.com/600x300?text=Adventure+World" alt="Adventure World">
-        <div class="featured-info">
-          <h3>Adventure World</h3>
-          <p>Embark on an epic journey through mysterious lands, dangerous dungeons, and hidden treasures.</p>
-          <button>Play Now</button>
-        </div>
-      </div>
-    </section>
+      <section class="about">
+        <h2>About PixelGame</h2>
+        <p>PixelGame is a platform where you can discover, create, and share your own games. It's built for players who love creativity and exploration!</p>
+      </section>
+    </div>
   </main>
 
   <footer>
-    © 2025 PixelGame. All rights reserved.
+    <div class="container">
+      <p>© 2025 PixelGame. All rights reserved.</p>
+    </div>
   </footer>
 
   <script src="script.js"></script>
