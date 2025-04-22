@@ -1,51 +1,102 @@
-/* Main body, header, nav, etc (keep what you already had) */
+/* Reset some default browser styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-/* New styles for the Games Page */
+/* Overall body setup */
+body {
+  background-color: #f5f5f5;
+  color: #333;
+  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header styling */
+header {
+  background-color: #ffffff;
+  padding: 20px 40px;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  font-size: 2em;
+  color: #00aaff;
+}
+
+nav {
+  display: flex;
+  gap: 20px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #555;
+  font-size: 1.1em;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+
+nav a:hover {
+  color: #00aaff;
+}
+
+/* Main content area */
+main {
+  flex: 1;
+  padding: 40px;
+  text-align: center;
+}
+
+/* Button styling */
+button {
+  margin-top: 20px;
+  padding: 12px 25px;
+  font-size: 1.2em;
+  background-color: #00aaff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+button:hover {
+  background-color: #0088cc;
+  transform: scale(1.05);
+}
+
+/* Games Gallery Grid */
 .games-gallery {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 30px;
   margin-top: 40px;
 }
 
+/* Game Cards */
 .game-card {
   background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  width: 300px;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
-  text-align: center;
-  padding-bottom: 20px;
-  transition: transform 0.2s;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  width: 280px;
+  overflow: hidden;
+  box-shadow: 0px 5px 15px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .game-card img {
   width: 100%;
-  height: 200px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  height: 180px;
+  object-fit: cover;
 }
 
 .game-card h3 {
-  margin: 15px 0;
-}
-
-.game-card button {
-  background-color: #00aaff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1em;
-  margin-top: 10px;
-}
-
-.game-card button:hover {
-  background-color: #0088cc;
-}
-
-.game-card:hover {
-  transform: scale(1.05);
-}
+  margin: 15px;
