@@ -29,11 +29,12 @@
           <label for="password">Password:</label><br>
           <input type="password" id="password" placeholder="Enter your password" required><br><br>
 
-          <label for="bio">Bio:</label><br>
-          <textarea id="bio" placeholder="Tell us about yourself..." rows="5" cols="40" required></textarea><br><br>
-
-          <button type="submit">Log In / Sign Up</button>
+          <button type="submit">Create Account / Log In</button>
         </form>
+
+        <hr style="margin: 30px 0;">
+
+        <button onclick="continueAsGuest()">Continue as Guest</button>
       </div>
     </main>
 
@@ -46,10 +47,9 @@
     function saveProfile() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
-      const bio = document.getElementById('bio').value.trim();
 
-      if (!username || !password || !bio) {
-        alert('Please fill in all fields.');
+      if (!username || !password) {
+        alert('Please fill in both fields.');
         return;
       }
 
@@ -57,11 +57,10 @@
       let userData = JSON.parse(localStorage.getItem('userData')) || {};
 
       if (users.includes(username)) {
-        // Existing user — verify password
         if (userData[username] && userData[username].password === password) {
-          // Login successful
+          // Log in
           localStorage.setItem('profileUsername', username);
-          localStorage.setItem('profileBio', bio);
+          localStorage.setItem('profileBio', userData[username].bio || "This user has no bio yet.");
           alert('Welcome back, ' + username + '!');
           window.location.href = 'profile.html';
         } else {
@@ -70,35 +69,44 @@
         return;
       }
 
-      // New user — register
+      // Create new account
       users.push(username);
       localStorage.setItem('registeredUsers', JSON.stringify(users));
-
       userData[username] = {
         password: password,
-        bio: bio
+        bio: "This is your default bio. You can edit it later."
       };
       localStorage.setItem('userData', JSON.stringify(userData));
-
       localStorage.setItem('profileUsername', username);
-      localStorage.setItem('profileBio', bio);
-
+      localStorage.setItem('profileBio', userData[username].bio);
       alert('Account created!');
+      window.location.href = 'profile.html';
+    }
+
+    function continueAsGuest() {
+      let guestCount = parseInt(localStorage.getItem('guestCount') || '0');
+      let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+
+      // Find a unique guest name
+      let guestName;
+      do {
+        guestCount++;
+        guestName = "Guest " + guestCount;
+      } while (users.includes(guestName));
+
+      // Save new guest info
+      localStorage.setItem('guestCount', guestCount);
+      localStorage.setItem('profileUsername', guestName);
+      localStorage.setItem('profileBio', "I'm playing as a guest!");
+
+      alert("You're now playing as " + guestName);
       window.location.href = 'profile.html';
     }
 
     function updateNavLinks() {
       const username = localStorage.getItem('profileUsername');
-      const loginLink = document.getElementById('loginLink');
-      const logoutLink = document.getElementById('logoutLink');
-
-      if (username) {
-        loginLink.style.display = 'none';
-        logoutLink.style.display = 'inline';
-      } else {
-        loginLink.style.display = 'inline';
-        logoutLink.style.display = 'none';
-      }
+      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
     }
 
     function logout() {
