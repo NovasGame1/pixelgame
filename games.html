@@ -6,89 +6,69 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>PixelGame</h1>
-<nav>
-  <a href="index.html">Home</a>
-  <a href="games.html">Games</a>
-  <a href="profile.html">Profile</a>
-  <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
-  <a href="login.html" id="loginLink">Login</a>
-  <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
-</nav>
+  <div class="page-wrapper">
+    <header>
+      <h1>PixelGame</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Profile</a>
+        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+      </nav>
+    </header>
 
+    <main>
+      <h2>Games</h2>
+      <div class="games-gallery">
+        <div class="game-card">
+          <img src="https://via.placeholder.com/300x200?text=Adventure+World" alt="Adventure World">
+          <h3>Adventure World</h3>
+          <button>Play</button>
+        </div>
 
+        <div class="game-card">
+          <img src="https://via.placeholder.com/300x200?text=Zombie+Rush" alt="Zombie Rush">
+          <h3>Zombie Rush</h3>
+          <button>Play</button>
+        </div>
 
-  </header>
-
-  <main>
-    <h2>Games</h2>
-    <div class="games-gallery">
-      <div class="game-card">
-        <img src="https://via.placeholder.com/300x200?text=Adventure+World" alt="Adventure World">
-        <h3>Adventure World</h3>
-        <button>Play</button>
+        <div class="game-card">
+          <img src="https://via.placeholder.com/300x200?text=Speed+Simulator" alt="Speed Simulator">
+          <h3>Speed Simulator</h3>
+          <button>Play</button>
+        </div>
       </div>
-      
-      <div class="game-card">
-        <img src="https://via.placeholder.com/300x200?text=Zombie+Rush" alt="Zombie Rush">
-        <h3>Zombie Rush</h3>
-        <button>Play</button>
-      </div>
+    </main>
 
-      <div class="game-card">
-        <img src="https://via.placeholder.com/300x200?text=Speed+Simulator" alt="Speed Simulator">
-        <h3>Speed Simulator</h3>
-        <button>Play</button>
-      </div>
-    </div>
-  </main>
-
-  <script src="script.js"></script>
-
-
-function updateNavLinks() {
-  const username = localStorage.getItem('profileUsername');
-  const isAdmin = username === "Nova";
-  document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
-  document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
-
-  const adminBtn = document.getElementById("adminBtn");
-  if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
-}
-
-
+    <footer>
+      © 2025 PixelGame.
+    </footer>
+  </div>
 
   <script>
-  // Function to check login status and toggle navigation links
-  function updateNavLinks() {
-    const username = localStorage.getItem('profileUsername');
-    const loginLink = document.getElementById('loginLink');
-    const logoutLink = document.getElementById('logoutLink');
-
-    if (username) {
-      // User is logged in
-      loginLink.style.display = 'none';
-      logoutLink.style.display = 'inline';
-    } else {
-      // User is not logged in
-      loginLink.style.display = 'inline';
-      logoutLink.style.display = 'none';
+    function logout() {
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
+      updateNavLinks();
+      window.location.href = 'login.html';
     }
-  }
 
-  // Logout function
-  function logout() {
-    localStorage.removeItem('profileUsername');
-    localStorage.removeItem('profileBio');
-    // Optionally, remove other related items
-    updateNavLinks();
-    window.location.href = 'login.html';
-  }
+    function updateNavLinks() {
+      const username = localStorage.getItem('profileUsername');
+      const isAdmin = username === "Nova";
 
-  // Initialize navigation links on page load
-  document.addEventListener('DOMContentLoaded', updateNavLinks);
-</script>
+      const loginLink = document.getElementById('loginLink');
+      const logoutLink = document.getElementById('logoutLink');
+      const adminBtn = document.getElementById("adminBtn");
 
+      if (loginLink) loginLink.style.display = username ? 'none' : 'inline';
+      if (logoutLink) logoutLink.style.display = username ? 'inline' : 'none';
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', updateNavLinks);
+  </script>
 </body>
 </html>
