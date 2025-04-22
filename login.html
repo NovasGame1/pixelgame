@@ -9,28 +9,30 @@
   <div class="page-wrapper">
     <header>
       <h1>PixelGame</h1>
-<nav>
-  <a href="index.html">Home</a>
-  <a href="games.html">Games</a>
-  <a href="profile.html">Profile</a>
-  <a href="login.html" id="loginLink">Login</a>
-  <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
-</nav>
-
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Profile</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+      </nav>
     </header>
 
     <main>
       <div class="section-box">
-        <h2>Login / Set Profile</h2>
+        <h2>Log In / Sign Up</h2>
 
         <form onsubmit="saveProfile(); return false;">
           <label for="username">Username:</label><br>
           <input type="text" id="username" placeholder="Enter your username" required><br><br>
 
+          <label for="password">Password:</label><br>
+          <input type="password" id="password" placeholder="Enter your password" required><br><br>
+
           <label for="bio">Bio:</label><br>
           <textarea id="bio" placeholder="Tell us about yourself..." rows="5" cols="40" required></textarea><br><br>
 
-          <button type="submit">Save Profile</button>
+          <button type="submit">Log In / Sign Up</button>
         </form>
       </div>
     </main>
@@ -40,83 +42,73 @@
     </footer>
   </div>
 
-<script>
-  function saveProfile() {
-    const username = document.getElementById('username').value.trim();
-    const bio = document.getElementById('bio').value.trim();
+  <script>
+    function saveProfile() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const bio = document.getElementById('bio').value.trim();
 
-    if (!username || !bio) {
-      alert('Please fill in both username and bio.');
-      return;
+      if (!username || !password || !bio) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      let userData = JSON.parse(localStorage.getItem('userData')) || {};
+
+      if (users.includes(username)) {
+        // Existing user — verify password
+        if (userData[username] && userData[username].password === password) {
+          // Login successful
+          localStorage.setItem('profileUsername', username);
+          localStorage.setItem('profileBio', bio);
+          alert('Welcome back, ' + username + '!');
+          window.location.href = 'profile.html';
+        } else {
+          alert('Incorrect password for this username.');
+        }
+        return;
+      }
+
+      // New user — register
+      users.push(username);
+      localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+      userData[username] = {
+        password: password,
+        bio: bio
+      };
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+      localStorage.setItem('profileUsername', username);
+      localStorage.setItem('profileBio', bio);
+
+      alert('Account created!');
+      window.location.href = 'profile.html';
     }
 
-    // Load list of all registered usernames
-    let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+    function updateNavLinks() {
+      const username = localStorage.getItem('profileUsername');
+      const loginLink = document.getElementById('loginLink');
+      const logoutLink = document.getElementById('logoutLink');
 
-    // If the username is already taken...
-    if (users.includes(username)) {
-      // ...check if the current session was previously logged in as that user
-      const currentUser = localStorage.getItem('profileUsername');
-      if (currentUser === username) {
-        // Just restore the session
-        localStorage.setItem('profileUsername', username);
-        localStorage.setItem('profileBio', bio);
-        alert('Welcome back, ' + username + '!');
-        window.location.href = 'profile.html';
-        return;
+      if (username) {
+        loginLink.style.display = 'none';
+        logoutLink.style.display = 'inline';
       } else {
-        // Allow login only if it's your own account (optional: implement real login check)
-        alert('Username already exists. Please log in as that user or pick a different name.');
-        return;
+        loginLink.style.display = 'inline';
+        logoutLink.style.display = 'none';
       }
     }
 
-    // Username is new – register it
-    users.push(username);
-    localStorage.setItem('registeredUsers', JSON.stringify(users));
-
-    // Save profile data
-    localStorage.setItem('profileUsername', username);
-    localStorage.setItem('profileBio', bio);
-
-    alert('Account created! Redirecting to your profile...');
-    window.location.href = 'profile.html';
-  }
-</script>
-
-
-
-
-  <script>
-  // Function to check login status and toggle navigation links
-  function updateNavLinks() {
-    const username = localStorage.getItem('profileUsername');
-    const loginLink = document.getElementById('loginLink');
-    const logoutLink = document.getElementById('logoutLink');
-
-    if (username) {
-      // User is logged in
-      loginLink.style.display = 'none';
-      logoutLink.style.display = 'inline';
-    } else {
-      // User is not logged in
-      loginLink.style.display = 'inline';
-      logoutLink.style.display = 'none';
+    function logout() {
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
+      updateNavLinks();
+      window.location.href = 'login.html';
     }
-  }
 
-  // Logout function
-  function logout() {
-    localStorage.removeItem('profileUsername');
-    localStorage.removeItem('profileBio');
-    // Optionally, remove other related items
-    updateNavLinks();
-    window.location.href = 'login.html';
-  }
-
-  // Initialize navigation links on page load
-  document.addEventListener('DOMContentLoaded', updateNavLinks);
-</script>
-
+    document.addEventListener('DOMContentLoaded', updateNavLinks);
+  </script>
 </body>
 </html>
