@@ -40,32 +40,50 @@
     </footer>
   </div>
 
-  <script>
+<script>
   function saveProfile() {
     const username = document.getElementById('username').value.trim();
     const bio = document.getElementById('bio').value.trim();
 
-    // Load existing registered usernames
-    let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-
-    // Check if username already exists
-    if (users.includes(username)) {
-      alert('Username already taken! Please choose a different one.');
+    if (!username || !bio) {
+      alert('Please fill in both username and bio.');
       return;
     }
 
-    // Otherwise, save new username and bio
-    localStorage.setItem('profileUsername', username);
-    localStorage.setItem('profileBio', bio);
+    // Load list of all registered usernames
+    let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
 
-    // Add username to registered users list
+    // If the username is already taken...
+    if (users.includes(username)) {
+      // ...check if the current session was previously logged in as that user
+      const currentUser = localStorage.getItem('profileUsername');
+      if (currentUser === username) {
+        // Just restore the session
+        localStorage.setItem('profileUsername', username);
+        localStorage.setItem('profileBio', bio);
+        alert('Welcome back, ' + username + '!');
+        window.location.href = 'profile.html';
+        return;
+      } else {
+        // Allow login only if it's your own account (optional: implement real login check)
+        alert('Username already exists. Please log in as that user or pick a different name.');
+        return;
+      }
+    }
+
+    // Username is new – register it
     users.push(username);
     localStorage.setItem('registeredUsers', JSON.stringify(users));
 
-    alert('Profile Saved! Go to your Profile page.');
+    // Save profile data
+    localStorage.setItem('profileUsername', username);
+    localStorage.setItem('profileBio', bio);
+
+    alert('Account created! Redirecting to your profile...');
     window.location.href = 'profile.html';
   }
 </script>
+
 
 
 
