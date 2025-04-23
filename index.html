@@ -20,21 +20,30 @@
   </style>
 </head>
 <body>
+  <!-- Bits HUD -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
+
   <div class="page-wrapper">
     <header>
-      <h1>Welcome to PixelGame</h1>
+      <h1>PixelGame</h1>
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
         <a href="profile.html">Profile</a>
         <a href="people.html">People</a>
         <a href="shop.html">Shop</a>
+        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
       </nav>
     </header>
 
     <main>
-      <p>Explore the world of PixelGame. Customize your character, make friends, and shop for cool gear using Bits!</p>
+      <div class="section-box home-content">
+        <h2>Welcome to PixelGame!</h2>
+        <p>This is your hub for classic fun and imagination. Play games, build worlds, and relive the good ol' days!</p>
+        <button onclick="launchGame()">Play Featured Game</button>
+      </div>
     </main>
 
     <footer>
@@ -43,15 +52,39 @@
   </div>
 
   <script>
-    function updateBitsDisplay() {
-      const username = localStorage.getItem("profileUsername");
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const bits = (userData[username] && userData[username].bits) || 0;
-      const bitDisplay = document.getElementById("bitCountTop");
-      if (bitDisplay) bitDisplay.innerText = bits;
+    function logout() {
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
+      updateNavLinks();
+      window.location.href = 'login.html';
     }
 
-    document.addEventListener("DOMContentLoaded", updateBitsDisplay);
+    function updateNavLinks() {
+      const username = localStorage.getItem('profileUsername');
+      const isAdmin = username === "Nova";
+      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
+      const adminBtn = document.getElementById("adminBtn");
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+    }
+
+    function launchGame() {
+      alert("Loading game... (Coming soon!)");
+    }
+
+    function updateBitsDisplay() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      if (!username || !userData[username]) return;
+      const bits = userData[username].bits ?? 0;
+      const bitTop = document.getElementById("bitCountTop");
+      if (bitTop) bitTop.innerText = bits;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavLinks();
+      updateBitsDisplay();
+    });
   </script>
 </body>
 </html>
