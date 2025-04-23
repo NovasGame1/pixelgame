@@ -37,7 +37,9 @@
   </style>
 </head>
 <body>
+  <!-- Bits HUD -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
+
   <div class="page-wrapper">
     <header>
       <h1>PixelGame Shop</h1>
@@ -109,8 +111,20 @@
       user.bits -= cost;
 
       localStorage.setItem('userData', JSON.stringify(userData));
+      alert("You bought: " + name);
       updateBitsDisplay();
     }
+
+    function updateBitsDisplay() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      if (!username || !userData[username]) return;
+      const bits = userData[username].bits ?? 0;
+      const bitTop = document.getElementById("bitCountTop");
+      if (bitTop) bitTop.innerText = bits;
+    }
+
+    document.addEventListener('DOMContentLoaded', updateBitsDisplay);
   </script>
 </body>
 </html>
