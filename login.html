@@ -58,18 +58,25 @@
     let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
     let userData = JSON.parse(localStorage.getItem('userData')) || {};
 
-    if (users.includes(username)) {
-      if (userData[username] && userData[username].password === password) {
-        // Logging in existing user
-        localStorage.setItem('profileUsername', username);
-        localStorage.setItem('profileBio', userData[username].bio || '');
-        alert('Welcome back, ' + username + '!');
-        window.location.href = 'profile.html';
-      } else {
-        alert('Incorrect password for this username.');
-      }
-      return;
+if (users.includes(username)) {
+  if (userData[username] && userData[username].password === password) {
+    // 🩹 Patch old users with no Bits
+    if (userData[username].bits === undefined) {
+      userData[username].bits = 0;
+      localStorage.setItem('userData', JSON.stringify(userData));
     }
+
+    // Login success
+    localStorage.setItem('profileUsername', username);
+    localStorage.setItem('profileBio', userData[username].bio || '');
+    alert('Welcome back, ' + username + '!');
+    window.location.href = 'profile.html';
+  } else {
+    alert('Incorrect password for this username.');
+  }
+  return;
+}
+
 
     // Create new account
     users.push(username);
