@@ -41,15 +41,20 @@
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
 
   <div class="page-wrapper">
-    <header>
-      <h1>PixelGame Shop</h1>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="profile.html">Profile</a>
-        <a href="people.html">People</a>
-        <a href="shop.html">Shop</a>
-      </nav>
+<header>
+  <h1>PixelGame Shop</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="games.html">Games</a>
+    <a href="profile.html">Profile</a>
+    <a href="people.html">People</a>
+    <a href="shop.html">Shop</a>
+    <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
+    <a href="login.html" id="loginLink">Login</a>
+    <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+  </nav>
+</header>
+
     </header>
 
     <main>
@@ -90,12 +95,23 @@
     </footer>
   </div>
 
- <script>
-  /* Shared Helper Functions */
+<script>
   function getUser() {
     const username = localStorage.getItem("profileUsername");
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
     return { username, data: userData[username] || {} };
+  }
+
+  function updateNavLinks() {
+    const { username } = getUser();
+    const isLoggedIn = !!username;
+    const isAdmin = username === "Nova";
+
+    document.getElementById('loginLink').style.display = isLoggedIn ? "none" : "inline";
+    document.getElementById('logoutLink').style.display = isLoggedIn ? "inline" : "none";
+
+    const adminBtn = document.getElementById("adminBtn");
+    if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
   }
 
   function updateBitsDisplay() {
@@ -103,17 +119,6 @@
     const bits = data.bits ?? 0;
     const bitTop = document.getElementById("bitCountTop");
     if (bitTop) bitTop.textContent = bits;
-  }
-
-  function updateNavLinks() {
-    const { username } = getUser();
-    const loggedIn = !!username;
-    const isAdmin = username === "Nova";
-
-    document.getElementById('loginLink').style.display = loggedIn ? 'none' : 'inline';
-    document.getElementById('logoutLink').style.display = loggedIn ? 'inline' : 'none';
-    const adminBtn = document.getElementById('adminBtn');
-    if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
   }
 
   function logout() {
@@ -124,36 +129,12 @@
     window.location.href = "login.html";
   }
 
-  /* Shop-specific Functions */
-  function switchTab(tab) {
-    document.querySelectorAll(".shop-section").forEach(el => el.classList.remove("active"));
-    document.getElementById(tab).classList.add("active");
-  }
-
-  function buyItem(type, name, cost) {
-    const { username, data } = getUser();
-    if (!username) return alert("You're not logged in.");
-
-    if ((data.bits || 0) < cost) return alert("Not enough Bits!");
-
-    if (!data.ownedItems) data.ownedItems = {};
-    data.ownedItems[type] = name;
-    data.bits -= cost;
-
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    userData[username] = data;
-    localStorage.setItem("userData", JSON.stringify(userData));
-
-    alert("You bought: " + name);
-    updateBitsDisplay();
-  }
-
-  /* Initialization */
   document.addEventListener("DOMContentLoaded", () => {
     updateNavLinks();
     updateBitsDisplay();
   });
 </script>
+
 
 
 </body>
