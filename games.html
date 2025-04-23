@@ -4,43 +4,47 @@
   <meta charset="UTF-8">
   <title>PixelGame - Games</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    #bitsDisplay {
+      position: fixed;
+      top: 10px;
+      right: 20px;
+      background: #fff;
+      border: 2px solid #444;
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
 <body>
+  <!-- Bits HUD -->
+  <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
+
   <div class="page-wrapper">
     <header>
-      <h1>PixelGame</h1>
+      <h1>PixelGame - Games</h1>
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
-        <a href="profile.html">Your Profile</a>
+        <a href="profile.html">Profile</a>
         <a href="people.html">People</a>
-                <a href="shop.html">Shop</a>
-        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
-        <a href="login.html" id="loginLink">Login</a>
-        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+        <a href="shop.html">Shop</a>
       </nav>
     </header>
 
     <main>
-      <h2>Games</h2>
-      <div class="games-gallery">
-        <div class="game-card">
-          <img src="https://via.placeholder.com/300x200?text=Adventure+World" alt="Adventure World">
-          <h3>Adventure World</h3>
-          <button>Play</button>
-        </div>
+      <div class="section-box">
+        <h2>Featured Game</h2>
+        <p>Play our featured experience of the day!</p>
+        <button onclick="alert('Launching... (Coming soon!)')">Play</button>
+      </div>
 
-        <div class="game-card">
-          <img src="https://via.placeholder.com/300x200?text=Zombie+Rush" alt="Zombie Rush">
-          <h3>Zombie Rush</h3>
-          <button>Play</button>
-        </div>
-
-        <div class="game-card">
-          <img src="https://via.placeholder.com/300x200?text=Speed+Simulator" alt="Speed Simulator">
-          <h3>Speed Simulator</h3>
-          <button>Play</button>
-        </div>
+      <div class="section-box">
+        <h2>All Games</h2>
+        <p>More games coming soon.</p>
       </div>
     </main>
 
@@ -50,27 +54,16 @@
   </div>
 
   <script>
-    function logout() {
-      localStorage.removeItem('profileUsername');
-      localStorage.removeItem('profileBio');
-      updateNavLinks();
-      window.location.href = 'login.html';
+    function updateBitsDisplay() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      if (!username || !userData[username]) return;
+      const bits = userData[username].bits ?? 0;
+      const bitTop = document.getElementById("bitCountTop");
+      if (bitTop) bitTop.innerText = bits;
     }
 
-    function updateNavLinks() {
-      const username = localStorage.getItem('profileUsername');
-      const isAdmin = username === "Nova";
-
-      const loginLink = document.getElementById('loginLink');
-      const logoutLink = document.getElementById('logoutLink');
-      const adminBtn = document.getElementById("adminBtn");
-
-      if (loginLink) loginLink.style.display = username ? 'none' : 'inline';
-      if (logoutLink) logoutLink.style.display = username ? 'inline' : 'none';
-      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
-    }
-
-    document.addEventListener('DOMContentLoaded', updateNavLinks);
+    document.addEventListener('DOMContentLoaded', updateBitsDisplay);
   </script>
 </body>
 </html>
