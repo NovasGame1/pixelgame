@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PixelGame - Shop</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .shop-tabs button {
+      margin-right: 10px;
+      padding: 6px 12px;
+      font-weight: bold;
+    }
+    .shop-section {
+      display: none;
+    }
+    .shop-section.active {
+      display: block;
+    }
+    .shop-item {
+      border: 2px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header>
+      <h1>PixelGame Shop</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Profile</a>
+        <a href="people.html">People</a>
+        <a href="shop.html">Shop</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="shop-tabs">
+        <button onclick="switchTab('shirts')">Shirts</button>
+        <button onclick="switchTab('pants')">Pants</button>
+      </div>
+
+      <div id="shirts" class="shop-section active">
+        <div class="shop-item">
+          <strong>Red Shirt</strong><br>
+          Price: 10 Bits<br>
+          <button onclick="buyItem('shirt', 'Red Shirt', 10)">Buy</button>
+        </div>
+        <div class="shop-item">
+          <strong>Blue Shirt</strong><br>
+          Price: 15 Bits<br>
+          <button onclick="buyItem('shirt', 'Blue Shirt', 15)">Buy</button>
+        </div>
+      </div>
+
+      <div id="pants" class="shop-section">
+        <div class="shop-item">
+          <strong>Black Pants</strong><br>
+          Price: 12 Bits<br>
+          <button onclick="buyItem('pants', 'Black Pants', 12)">Buy</button>
+        </div>
+        <div class="shop-item">
+          <strong>Green Pants</strong><br>
+          Price: 8 Bits<br>
+          <button onclick="buyItem('pants', 'Green Pants', 8)">Buy</button>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      © 2025 PixelGame.
+    </footer>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.shop-section').forEach(el => el.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+    }
+
+    function buyItem(type, name, cost) {
+      const username = localStorage.getItem('profileUsername');
+      if (!username) return alert("You're not logged in.");
+
+      let userData = JSON.parse(localStorage.getItem('userData')) || {};
+      const user = userData[username];
+
+      if (!user) return alert("User data not found.");
+      if ((user.bits || 0) < cost) return alert("Not enough Bits!");
+
+      // Only allow one owned at a time
+      if (!user.ownedItems) user.ownedItems = {};
+      user.ownedItems[type] = name;
+      user.bits -= cost;
+
+      localStorage.setItem('userData', JSON.stringify(userData));
+      alert("You bought: " + name);
+    }
+  </script>
+</body>
+</html>
