@@ -57,6 +57,15 @@
   </div>
 
   <script>
+    function updateNavLinks() {
+      const username = localStorage.getItem('profileUsername');
+      const isAdmin = username === "Nova";
+      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
+      const adminBtn = document.getElementById("adminBtn");
+      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
+    }
+
     function updateBitsDisplay() {
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const username = localStorage.getItem("profileUsername");
@@ -66,7 +75,18 @@
       if (bitTop) bitTop.innerText = bits;
     }
 
-    document.addEventListener('DOMContentLoaded', updateBitsDisplay);
+    function logout() {
+      localStorage.removeItem("profileUsername");
+      localStorage.removeItem("profileBio");
+      updateNavLinks();
+      updateBitsDisplay();
+      window.location.href = "login.html";
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavLinks();
+      updateBitsDisplay();
+    });
   </script>
 </body>
 </html>
