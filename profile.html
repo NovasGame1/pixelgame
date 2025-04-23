@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PixelGame - Profile</title>
+  <title>PixelGame - Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,40 +21,22 @@
     </header>
 
     <main>
-      <!-- Profile Top -->
-      <div class="section-box profile-top">
-        <img src="https://via.placeholder.com/150x150?text=Avatar" alt="Avatar" class="avatar">
-        <div class="profile-info">
-          <h2 class="username" id="displayUsername">Guest</h2>
-          <p class="join-date">Joined: April 2025</p>
-          <button onclick="logout()" class="logout-button">Logout</button>
-        </div>
-      </div>
-
-      <!-- Bio Section -->
       <div class="section-box">
-        <h2>About Me</h2>
-        <p id="displayBio">No bio set yet.</p>
+        <h2>Log In / Sign Up</h2>
 
-        <div id="editBioSection" style="display: none;">
-          <textarea id="bioInput" rows="5" cols="40"></textarea><br><br>
-          <button onclick="saveBio()">Save Bio</button>
-          <button onclick="cancelEdit()">Cancel</button>
-        </div>
+        <form onsubmit="saveProfile(); return false;">
+          <label for="username">Username:</label><br>
+          <input type="text" id="username" placeholder="Enter your username" required><br><br>
 
-        <button id="editBioBtn" onclick="showBioEditor()">Edit Bio</button>
-      </div>
+          <label for="password">Password:</label><br>
+          <input type="password" id="password" placeholder="Enter your password" required><br><br>
 
-      <!-- Friend Requests -->
-      <div class="section-box">
-        <h2>Friend Requests</h2>
-        <div id="requestList"><em>Loading...</em></div>
-      </div>
+          <button type="submit">Create Account / Log In</button>
+        </form>
 
-      <!-- Friends List -->
-      <div class="section-box">
-        <h2>Your Friends</h2>
-        <div id="friendsList"><em>Loading...</em></div>
+        <hr style="margin: 30px 0;">
+
+        <button onclick="continueAsGuest()">Continue as Guest</button>
       </div>
     </main>
 
@@ -64,14 +46,63 @@
   </div>
 
   <script>
-    const username = localStorage.getItem('profileUsername');
-    const storedBio = localStorage.getItem('profileBio');
+    function saveProfile() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
 
-    if (!username) {
-      window.location.href = 'login.html';
-    } else {
-      document.getElementById('displayUsername').innerText = username;
-      document.getElementById('displayBio').innerText = storedBio || "This user has no bio yet.";
+      if (!username || !password) {
+        alert('Please fill in both fields.');
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      let userData = JSON.parse(localStorage.getItem('userData')) || {};
+
+      if (users.includes(username)) {
+        if (userData[username] && userData[username].password === password) {
+          localStorage.setItem('profileUsername', username);
+          localStorage.setItem('profileBio', userData[username].bio || "No bio set.");
+          alert('Welcome back, ' + username + '!');
+          window.location.href = 'profile.html';
+        } else {
+          alert('Incorrect password for this username.');
+        }
+        return;
+      }
+
+      // New account
+      users.push(username);
+      localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+      userData[username] = {
+        password: password,
+        bio: "This is your default bio. You can edit it later.",
+        bits: 0 // Start with 0 Bits
+      };
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+      localStorage.setItem('profileUsername', username);
+      localStorage.setItem('profileBio', userData[username].bio);
+      alert('Account created!');
+      window.location.href = 'profile.html';
+    }
+
+    function continueAsGuest() {
+      let guestCount = parseInt(localStorage.getItem('guestCount') || '0');
+      let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+
+      let guestName;
+      do {
+        guestCount++;
+        guestName = "Guest " + guestCount;
+      } while (users.includes(guestName));
+
+      localStorage.setItem('guestCount', guestCount);
+      localStorage.setItem('profileUsername', guestName);
+      localStorage.setItem('profileBio', "I'm playing as a guest!");
+
+      alert("You're now playing as " + guestName);
+      window.location.href = 'profile.html';
     }
 
     function logout() {
@@ -84,138 +115,13 @@
     function updateNavLinks() {
       const username = localStorage.getItem('profileUsername');
       const isAdmin = username === "Nova";
-      const loginLink = document.getElementById('loginLink');
-      const logoutLink = document.getElementById('logoutLink');
-      const adminBtn = document.getElementById("adminBtn");
-
-      if (loginLink) loginLink.style.display = username ? 'none' : 'inline';
-      if (logoutLink) logoutLink.style.display = username ? 'inline' : 'none';
+      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
+      const adminBtn = document.getElementById('adminBtn');
       if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
 
-    function showBioEditor() {
-      document.getElementById('editBioSection').style.display = 'block';
-      document.getElementById('editBioBtn').style.display = 'none';
-      document.getElementById('bioInput').value = localStorage.getItem('profileBio') || '';
-    }
-
-    function cancelEdit() {
-      document.getElementById('editBioSection').style.display = 'none';
-      document.getElementById('editBioBtn').style.display = 'inline';
-    }
-
-    function saveBio() {
-      const newBio = document.getElementById('bioInput').value;
-      localStorage.setItem('profileBio', newBio);
-      document.getElementById('displayBio').innerText = newBio;
-
-      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-      if (registeredUsers.includes(username)) {
-        let userData = JSON.parse(localStorage.getItem('userData')) || {};
-        if (userData[username]) {
-          userData[username].bio = newBio;
-          localStorage.setItem('userData', JSON.stringify(userData));
-        }
-      }
-
-      cancelEdit();
-    }
-
-    function loadFriendRequests() {
-      const currentUser = localStorage.getItem('profileUsername');
-      const friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
-      const listDiv = document.getElementById("requestList");
-
-      const requests = friendRequests[currentUser] || [];
-
-      if (requests.length === 0) {
-        listDiv.innerHTML = "<p>No friend requests.</p>";
-        return;
-      }
-
-      listDiv.innerHTML = "";
-      requests.forEach(fromUser => {
-        const item = document.createElement("div");
-        item.innerHTML = `
-          <strong>${fromUser}</strong>
-          <button onclick="acceptFriend('${fromUser}')">Accept</button>
-        `;
-        listDiv.appendChild(item);
-      });
-    }
-
-    function acceptFriend(fromUser) {
-      const currentUser = localStorage.getItem('profileUsername');
-      let friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
-      let friends = JSON.parse(localStorage.getItem('friends')) || {};
-
-      // Remove request
-      friendRequests[currentUser] = (friendRequests[currentUser] || []).filter(name => name !== fromUser);
-      localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
-
-      // Add to friends lists
-      if (!friends[currentUser]) friends[currentUser] = [];
-      if (!friends[fromUser]) friends[fromUser] = [];
-
-      if (!friends[currentUser].includes(fromUser)) friends[currentUser].push(fromUser);
-      if (!friends[fromUser].includes(currentUser)) friends[fromUser].push(currentUser);
-
-      localStorage.setItem('friends', JSON.stringify(friends));
-
-      alert("You and " + fromUser + " are now friends!");
-      loadFriendRequests();
-      loadFriendsList();
-    }
-
-    function loadFriendsList() {
-      const currentUser = localStorage.getItem('profileUsername');
-      const friends = JSON.parse(localStorage.getItem('friends')) || {};
-      const myFriends = friends[currentUser] || [];
-      const container = document.getElementById('friendsList');
-
-      if (myFriends.length === 0) {
-        container.innerHTML = "<p>You don't have any friends yet.</p>";
-        return;
-      }
-
-      container.innerHTML = "";
-      myFriends.forEach(friendName => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <strong>${friendName}</strong>
-          <button onclick="viewFriend('${friendName}')">View</button>
-          <button onclick="unfriend('${friendName}')">Unfriend</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function viewFriend(name) {
-      localStorage.setItem("viewingUser", name);
-      window.location.href = "viewprofile.html";
-    }
-
-    function unfriend(name) {
-      const currentUser = localStorage.getItem('profileUsername');
-      let friends = JSON.parse(localStorage.getItem('friends')) || {};
-
-      if (friends[currentUser]) {
-        friends[currentUser] = friends[currentUser].filter(f => f !== name);
-      }
-      if (friends[name]) {
-        friends[name] = friends[name].filter(f => f !== currentUser);
-      }
-
-      localStorage.setItem('friends', JSON.stringify(friends));
-      alert(`You and ${name} are no longer friends.`);
-      loadFriendsList();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      updateNavLinks();
-      loadFriendRequests();
-      loadFriendsList();
-    });
+    document.addEventListener('DOMContentLoaded', updateNavLinks);
   </script>
 </body>
 </html>
