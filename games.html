@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PixelGame - Games</title>
+  <title>PixelGame - Games</title>https://github.com/NovasGame1/pixelgame/blob/main/games.html
   <link rel="stylesheet" href="style.css">
   <style>
     #bitsDisplay {
@@ -53,40 +53,52 @@
 
     <footer>
       © 2025 PixelGame.
-    </footer>
+    </footer>https://github.com/NovasGame1/pixelgame/blob/main/games.html
   </div>
 
-  <script>
-    function updateNavLinks() {
-      const username = localStorage.getItem('profileUsername');
-      const isAdmin = username === "Nova";
-      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
-      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
-      const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
-    }
+<script>
+  /* ---------- shared helpers ---------- */
+  function getUser() {
+    const username = localStorage.getItem("profileUsername");
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    return { username, data: userData[username] || {} };
+  }
 
-    function updateBitsDisplay() {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const username = localStorage.getItem("profileUsername");
-      if (!username || !userData[username]) return;
-      const bits = userData[username].bits ?? 0;
-      const bitTop = document.getElementById("bitCountTop");
-      if (bitTop) bitTop.innerText = bits;
-    }
+  function updateBitsDisplay() {
+    const { data } = getUser();
+    const bits = data.bits ?? 0;
+    const bitTop = document.getElementById("bitCountTop");
+    if (bitTop) bitTop.textContent = bits;
+  }
 
-    function logout() {
-      localStorage.removeItem("profileUsername");
-      localStorage.removeItem("profileBio");
-      updateNavLinks();
-      updateBitsDisplay();
-      window.location.href = "login.html";
-    }
+  function updateNavLinks() {
+    const { username } = getUser();
+    const isLoggedIn = !!username;
+    const isAdmin    = username === "Nova";
 
-    document.addEventListener('DOMContentLoaded', () => {
-      updateNavLinks();
-      updateBitsDisplay();
-    });
-  </script>
+    const loginL  = document.getElementById("loginLink");
+    const logoutL = document.getElementById("logoutLink");
+    const adminB  = document.getElementById("adminBtn");
+
+    if (loginL)  loginL.style.display  = isLoggedIn ? "none"  : "inline";
+    if (logoutL) logoutL.style.display = isLoggedIn ? "inline": "none";
+    if (adminB)  adminB.style.display  = isAdmin     ? "inline": "none";
+  }
+
+  /* ---------- page-specific actions ---------- */
+  function logout() {
+    localStorage.removeItem("profileUsername");
+    localStorage.removeItem("profileBio");
+    updateNavLinks();
+    updateBitsDisplay();
+    window.location.href = "login.html";
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    updateNavLinks();
+    updateBitsDisplay();
+  });
+</script>
+
 </body>
 </html>
