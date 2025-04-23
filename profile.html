@@ -21,17 +21,16 @@
     </header>
 
     <main>
-      <!-- Profile Top -->
       <div class="section-box profile-top">
         <img src="https://via.placeholder.com/150x150?text=Avatar" alt="Avatar" class="avatar">
         <div class="profile-info">
           <h2 class="username" id="displayUsername">Guest</h2>
           <p class="join-date">Joined: April 2025</p>
+          <p class="bits-balance">Bits: <span id="bitCount">0</span></p>
           <button onclick="logout()" class="logout-button">Logout</button>
         </div>
       </div>
 
-      <!-- Bio Section -->
       <div class="section-box">
         <h2>About Me</h2>
         <p id="displayBio">No bio set yet.</p>
@@ -45,13 +44,11 @@
         <button id="editBioBtn" onclick="showBioEditor()">Edit Bio</button>
       </div>
 
-      <!-- Friend Requests -->
       <div class="section-box">
         <h2>Friend Requests</h2>
         <div id="requestList"><em>Loading...</em></div>
       </div>
 
-      <!-- Friends List -->
       <div class="section-box">
         <h2>Your Friends</h2>
         <div id="friendsList"><em>Loading...</em></div>
@@ -84,12 +81,9 @@
     function updateNavLinks() {
       const username = localStorage.getItem('profileUsername');
       const isAdmin = username === "Nova";
-      const loginLink = document.getElementById('loginLink');
-      const logoutLink = document.getElementById('logoutLink');
-      const adminBtn = document.getElementById("adminBtn");
-
-      if (loginLink) loginLink.style.display = username ? 'none' : 'inline';
-      if (logoutLink) logoutLink.style.display = username ? 'inline' : 'none';
+      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
+      const adminBtn = document.getElementById('adminBtn');
       if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
 
@@ -110,6 +104,7 @@
       document.getElementById('displayBio').innerText = newBio;
 
       const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      const username = localStorage.getItem('profileUsername');
       if (registeredUsers.includes(username)) {
         let userData = JSON.parse(localStorage.getItem('userData')) || {};
         if (userData[username]) {
@@ -149,13 +144,11 @@
       let friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
       let friends = JSON.parse(localStorage.getItem('friends')) || {};
 
-      // Remove request
+      if (!Array.isArray(friends[currentUser])) friends[currentUser] = [];
+      if (!Array.isArray(friends[fromUser])) friends[fromUser] = [];
+
       friendRequests[currentUser] = (friendRequests[currentUser] || []).filter(name => name !== fromUser);
       localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
-
-      // Add to friends lists
-      if (!friends[currentUser]) friends[currentUser] = [];
-      if (!friends[fromUser]) friends[fromUser] = [];
 
       if (!friends[currentUser].includes(fromUser)) friends[currentUser].push(fromUser);
       if (!friends[fromUser].includes(currentUser)) friends[fromUser].push(currentUser);
@@ -215,6 +208,14 @@
       updateNavLinks();
       loadFriendRequests();
       loadFriendsList();
+
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+
+      if (userData[username]) {
+        const bits = userData[username].bits ?? 0;
+        document.getElementById("bitCount").innerText = bits;
+      }
     });
   </script>
 </body>
