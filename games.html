@@ -44,6 +44,16 @@
     .game-info p {
       margin: 5px 0 0 0;
     }
+    .play-link {
+      text-decoration: none;
+      color: white;
+      background: #4caf50;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-top: 8px;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -68,12 +78,12 @@
       <div class="section-box">
         <h2>Games</h2>
 
-
-        <div class="game-card" onclick="alert('Launching... (Coming soon!)')">
+        <div class="game-card">
           <div class="game-icon"></div>
           <div class="game-info">
             <h3>Pixel Plaza</h3>
             <p>Hang out and socialize with other players.</p>
+            <a href="pixelgame://play/pixel-plaza" class="play-link">Play</a>
           </div>
         </div>
 
