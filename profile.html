@@ -20,6 +20,7 @@
   </style>
 </head>
 <body>
+  <!-- Bits HUD in Top Right -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
 
   <div class="page-wrapper">
@@ -37,6 +38,7 @@
     </header>
 
     <main>
+      <!-- Profile Top Section -->
       <div class="section-box profile-top">
         <img src="https://via.placeholder.com/150x150?text=Avatar" alt="Avatar" class="avatar">
         <div class="profile-info">
@@ -47,6 +49,7 @@
         </div>
       </div>
 
+      <!-- Bio Section -->
       <div class="section-box">
         <h2>About Me</h2>
         <p id="displayBio">No bio set yet.</p>
@@ -60,14 +63,23 @@
         <button id="editBioBtn" onclick="showBioEditor()">Edit Bio</button>
       </div>
 
+      <!-- Friend Requests Section -->
       <div class="section-box">
         <h2>Friend Requests</h2>
         <div id="requestList"><em>Loading...</em></div>
       </div>
 
+      <!-- Friends List Section -->
       <div class="section-box">
         <h2>Your Friends</h2>
         <div id="friendsList"><em>Loading...</em></div>
+      </div>
+      
+      <!-- Temporary Bits Management UI (for testing dynamic Bits) -->
+      <div class="section-box" id="bitsControls" style="text-align: center;">
+        <h2>Bits Management (Test)</h2>
+        <button onclick="earnBits(10)">Earn 10 Bits</button>
+        <button onclick="spendBits(5)">Spend 5 Bits</button>
       </div>
     </main>
 
@@ -77,9 +89,9 @@
   </div>
 
   <script>
+    // On load, check for session; if not, redirect to login.
     const username = localStorage.getItem('profileUsername');
     const storedBio = localStorage.getItem('profileBio');
-
     if (!username) {
       window.location.href = 'login.html';
     } else {
@@ -87,6 +99,7 @@
       document.getElementById('displayBio').innerText = storedBio || "This user has no bio yet.";
     }
 
+    // Logout function
     function logout() {
       localStorage.removeItem('profileUsername');
       localStorage.removeItem('profileBio');
@@ -94,6 +107,7 @@
       window.location.href = 'login.html';
     }
 
+    // Nav links update function
     function updateNavLinks() {
       const username = localStorage.getItem('profileUsername');
       const isAdmin = username === "Nova";
@@ -103,6 +117,7 @@
       if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
 
+    // Bio editor functions
     function showBioEditor() {
       document.getElementById('editBioSection').style.display = 'block';
       document.getElementById('editBioBtn').style.display = 'none';
@@ -118,7 +133,6 @@
       const newBio = document.getElementById('bioInput').value;
       localStorage.setItem('profileBio', newBio);
       document.getElementById('displayBio').innerText = newBio;
-
       const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
       const username = localStorage.getItem('profileUsername');
       if (registeredUsers.includes(username)) {
@@ -128,22 +142,19 @@
           localStorage.setItem('userData', JSON.stringify(userData));
         }
       }
-
       cancelEdit();
     }
 
+    // Friend Requests functions
     function loadFriendRequests() {
       const currentUser = localStorage.getItem('profileUsername');
       const friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
       const listDiv = document.getElementById("requestList");
-
       const requests = friendRequests[currentUser] || [];
-
       if (requests.length === 0) {
         listDiv.innerHTML = "<p>No friend requests.</p>";
         return;
       }
-
       listDiv.innerHTML = "";
       requests.forEach(fromUser => {
         const item = document.createElement("div");
@@ -159,34 +170,28 @@
       const currentUser = localStorage.getItem('profileUsername');
       let friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
       let friends = JSON.parse(localStorage.getItem('friends')) || {};
-
       if (!Array.isArray(friends[currentUser])) friends[currentUser] = [];
       if (!Array.isArray(friends[fromUser])) friends[fromUser] = [];
-
       friendRequests[currentUser] = (friendRequests[currentUser] || []).filter(name => name !== fromUser);
       localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
-
       if (!friends[currentUser].includes(fromUser)) friends[currentUser].push(fromUser);
       if (!friends[fromUser].includes(currentUser)) friends[fromUser].push(currentUser);
-
       localStorage.setItem('friends', JSON.stringify(friends));
-
       alert("You and " + fromUser + " are now friends!");
       loadFriendRequests();
       loadFriendsList();
     }
 
+    // Friends List functions
     function loadFriendsList() {
       const currentUser = localStorage.getItem('profileUsername');
       const friends = JSON.parse(localStorage.getItem('friends')) || {};
       const myFriends = friends[currentUser] || [];
       const container = document.getElementById('friendsList');
-
       if (myFriends.length === 0) {
         container.innerHTML = "<p>You don't have any friends yet.</p>";
         return;
       }
-
       container.innerHTML = "";
       myFriends.forEach(friendName => {
         const div = document.createElement("div");
@@ -207,32 +212,56 @@
     function unfriend(name) {
       const currentUser = localStorage.getItem('profileUsername');
       let friends = JSON.parse(localStorage.getItem('friends')) || {};
-
       if (friends[currentUser]) {
         friends[currentUser] = friends[currentUser].filter(f => f !== name);
       }
       if (friends[name]) {
         friends[name] = friends[name].filter(f => f !== currentUser);
       }
-
       localStorage.setItem('friends', JSON.stringify(friends));
       alert(`You and ${name} are no longer friends.`);
       loadFriendsList();
     }
 
+    // --- Dynamic Bits Functions ---
+    function updateBitsDisplay() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      const bits = (userData[username] && userData[username].bits) || 0;
+      document.getElementById("bitCount").innerText = bits;
+      document.getElementById("bitCountTop").innerText = bits;
+    }
+
+    function earnBits(amount) {
+      const username = localStorage.getItem("profileUsername");
+      if (!username) return;
+      let userData = JSON.parse(localStorage.getItem("userData")) || {};
+      if (!userData[username]) { userData[username] = { bits: 0 }; }
+      userData[username].bits = (userData[username].bits || 0) + amount;
+      localStorage.setItem("userData", JSON.stringify(userData));
+      updateBitsDisplay();
+    }
+
+    function spendBits(amount) {
+      const username = localStorage.getItem("profileUsername");
+      if (!username) return;
+      let userData = JSON.parse(localStorage.getItem("userData")) || {};
+      if (!userData[username]) { userData[username] = { bits: 0 }; }
+      if (userData[username].bits < amount) {
+        alert("Not enough Bits!");
+        return;
+      }
+      userData[username].bits -= amount;
+      localStorage.setItem("userData", JSON.stringify(userData));
+      updateBitsDisplay();
+    }
+    // --- End Dynamic Bits Functions ---
+
     document.addEventListener('DOMContentLoaded', () => {
       updateNavLinks();
       loadFriendRequests();
       loadFriendsList();
-
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const username = localStorage.getItem("profileUsername");
-
-      if (userData[username]) {
-        const bits = userData[username].bits ?? 0;
-        document.getElementById("bitCount").innerText = bits;
-        document.getElementById("bitCountTop").innerText = bits;
-      }
+      updateBitsDisplay();
     });
   </script>
 </body>
