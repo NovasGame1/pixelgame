@@ -50,22 +50,22 @@
     </footer>
   </div>
 
- <script>
+<script>
   /* ---------- shared helpers ---------- */
-  function getUser() {
+  function getUser () {
     const username = localStorage.getItem("profileUsername");
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
     return { username, data: userData[username] || {} };
   }
 
-  function updateBitsDisplay() {
+  function updateBitsDisplay () {
     const { data } = getUser();
     const bits = data.bits ?? 0;
     const bitTop = document.getElementById("bitCountTop");
     if (bitTop) bitTop.textContent = bits;
   }
 
-  function updateNavLinks() {
+  function updateNavLinks () {
     const { username } = getUser();
     const isLoggedIn = !!username;
     const isAdmin    = username === "Nova";
@@ -79,23 +79,35 @@
     if (adminB)  adminB.style.display  = isAdmin     ? "inline": "none";
   }
 
-  /* ---------- page-specific helpers ---------- */
-  function filterUsers() {
-    const q = document.getElementById("searchBox").value.toLowerCase();
+  /* ---------- logout ---------- */
+  function logout () {
+    localStorage.removeItem("profileUsername");
+    localStorage.removeItem("profileBio");
+    updateNavLinks();
+    updateBitsDisplay();
+    window.location.href = "login.html";
+  }
+
+  /* ---------- people-page logic ---------- */
+  function filterUsers () {
+    const search = document.getElementById("searchBox").value.toLowerCase();
     document.querySelectorAll("#userList > div").forEach(div => {
-      div.style.display = div.textContent.toLowerCase().includes(q) ? "block" : "none";
+      div.style.display = div.textContent.toLowerCase().includes(search) ? "block" : "none";
     });
   }
 
-  function viewProfile(name) {
-    localStorage.setItem("viewingUser", name);
+  function viewProfile (username) {
+    localStorage.setItem("viewingUser", username);
     window.location.href = "viewprofile.html";
   }
 
-  function populateUserList() {
+  /* ---------- populate user list on load ---------- */
+  document.addEventListener("DOMContentLoaded", () => {
+    updateNavLinks();
+    updateBitsDisplay();
+
     const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
     const list  = document.getElementById("userList");
-    list.innerHTML = "";
 
     if (users.length === 0) {
       list.innerHTML = "<p>No registered users found.</p>";
@@ -107,27 +119,13 @@
       div.style.marginBottom = "10px";
       div.innerHTML = `
         <strong>${u}</strong>
-        <button onclick="viewProfile('${u}')">View Profile</button>`;
+        <button onclick="viewProfile('${u}')">View Profile</button>
+      `;
       list.appendChild(div);
     });
-  }
-
-  /* ---------- logout for nav ---------- */
-  function logout() {
-    localStorage.removeItem("profileUsername");
-    localStorage.removeItem("profileBio");
-    updateNavLinks();
-    updateBitsDisplay();
-    window.location.href = "login.html";
-  }
-
-  /* ---------- init ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
-    updateNavLinks();
-    updateBitsDisplay();
-    populateUserList();
   });
 </script>
+
 
 </body>
 </html>
