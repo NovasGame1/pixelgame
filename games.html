@@ -38,18 +38,45 @@
       </nav>
     </header>
 
-    <main>
-      <div class="section-box">
-        <h2>Featured Game</h2>
-        <p>Play our featured experience of the day!</p>
-        <button onclick="alert('Launching... (Coming soon!)')">Play</button>
-      </div>
+   <main>
+  <!-- ===== Featured Game ===== -->
+  <section class="featured-game">
+    <img src="https://via.placeholder.com/700x250?text=Adventure+World" alt="Featured">
+    <div class="featured-info">
+      <h2>Adventure World</h2>
+      <p>Explore mysterious islands, collect treasure, and out-run monsters!</p>
+      <button onclick="playGame('Adventure World')">Play</button>
+    </div>
+  </section>
 
-      <div class="section-box">
-        <h2>All Games</h2>
-        <p>More games coming soon.</p>
+  <!-- ===== Game Grid ===== -->
+  <h2 style="margin-top:40px;">All Games</h2>
+  <div class="game-grid">
+
+    <!-- Card -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x180?text=Zombie+Rush" alt="Zombie Rush">
+      <div class="card-body">
+        <h3>Zombie Rush</h3>
+        <p class="players">1 270 playing</p>
+        <button onclick="playGame('Zombie Rush')">Play</button>
       </div>
-    </main>
+    </div>
+
+    <!-- Card -->
+    <div class="game-card">
+      <img src="https://via.placeholder.com/300x180?text=Speed+Simulator" alt="Speed Simulator">
+      <div class="card-body">
+        <h3>Speed Simulator</h3>
+        <p class="players">980 playing</p>
+        <button onclick="playGame('Speed Simulator')">Play</button>
+      </div>
+    </div>
+
+    <!-- Add more cards the same way -->
+  </div>
+</main>
+
 
     <footer>
       © 2025 PixelGame.
