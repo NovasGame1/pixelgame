@@ -156,3 +156,20 @@ footer {
   border: 1px solid #999;
   margin-bottom: 5px;
 }
+
+
+#bitsDisplay {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  background-color: #f8f8f8;
+  color: #222;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-weight: bold;
+  font-family: 'Arial', sans-serif;
+  font-size: 16px;
+  z-index: 1000;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
