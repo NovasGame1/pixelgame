@@ -4,29 +4,37 @@
   <meta charset="UTF-8">
   <title>PixelGame - Home</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    #bitsDisplay {
+      position: fixed;
+      top: 10px;
+      right: 20px;
+      background: #fff;
+      border: 2px solid #444;
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
 <body>
+  <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
   <div class="page-wrapper">
     <header>
-      <h1>PixelGame</h1>
+      <h1>Welcome to PixelGame</h1>
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
-        <a href="profile.html">Your Profile</a>
+        <a href="profile.html">Profile</a>
         <a href="people.html">People</a>
-                <a href="shop.html">Shop</a>
-        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
-        <a href="login.html" id="loginLink">Login</a>
-        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+        <a href="shop.html">Shop</a>
       </nav>
     </header>
 
     <main>
-      <div class="section-box home-content">
-        <h2>Welcome to PixelGame!</h2>
-        <p>This is your hub for classic fun and imagination. Play games, build worlds, and relive the good ol' days!</p>
-        <button onclick="launchGame()">Play Featured Game</button>
-      </div>
+      <p>Explore the world of PixelGame. Customize your character, make friends, and shop for cool gear using Bits!</p>
     </main>
 
     <footer>
@@ -35,32 +43,15 @@
   </div>
 
   <script>
-    // Shows/hides Login, Logout, and Admin Panel buttons
-    function updateNavLinks() {
-      const username = localStorage.getItem('profileUsername');
-      const isAdmin = username === "Nova";
-
-      const loginLink = document.getElementById('loginLink');
-      const logoutLink = document.getElementById('logoutLink');
-      const adminBtn = document.getElementById('adminBtn');
-
-      if (loginLink) loginLink.style.display = username ? 'none' : 'inline';
-      if (logoutLink) logoutLink.style.display = username ? 'inline' : 'none';
-      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+    function updateBitsDisplay() {
+      const username = localStorage.getItem("profileUsername");
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const bits = (userData[username] && userData[username].bits) || 0;
+      const bitDisplay = document.getElementById("bitCountTop");
+      if (bitDisplay) bitDisplay.innerText = bits;
     }
 
-    function logout() {
-      localStorage.removeItem('profileUsername');
-      localStorage.removeItem('profileBio');
-      updateNavLinks();
-      window.location.href = 'login.html';
-    }
-
-    function launchGame() {
-      alert("Loading game... (Coming soon!)");
-    }
-
-    document.addEventListener('DOMContentLoaded', updateNavLinks);
+    document.addEventListener("DOMContentLoaded", updateBitsDisplay);
   </script>
 </body>
 </html>
