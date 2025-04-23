@@ -45,81 +45,87 @@
     </footer>
   </div>
 
-  <script>
-    function saveProfile() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
+ <script>
+  function saveProfile() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
 
-      if (!username || !password) {
-        alert('Please fill in both fields.');
-        return;
+    if (!username || !password) {
+      alert('Please fill in all fields.');
+      return;
+    }
+
+    let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+    let userData = JSON.parse(localStorage.getItem('userData')) || {};
+
+    if (users.includes(username)) {
+      if (userData[username] && userData[username].password === password) {
+        // Logging in existing user
+        localStorage.setItem('profileUsername', username);
+        localStorage.setItem('profileBio', userData[username].bio || '');
+        alert('Welcome back, ' + username + '!');
+        window.location.href = 'profile.html';
+      } else {
+        alert('Incorrect password for this username.');
       }
-
-      let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-      let userData = JSON.parse(localStorage.getItem('userData')) || {};
-
-      if (users.includes(username)) {
-        if (userData[username] && userData[username].password === password) {
-          // Log in
-          localStorage.setItem('profileUsername', username);
-          localStorage.setItem('profileBio', userData[username].bio || "This user has no bio yet.");
-          alert('Welcome back, ' + username + '!');
-          window.location.href = 'profile.html';
-        } else {
-          alert('Incorrect password for this username.');
-        }
-        return;
-      }
-
-      // Create new account
-      users.push(username);
-      localStorage.setItem('registeredUsers', JSON.stringify(users));
-      userData[username] = {
-        password: password,
-        bio: "This is your default bio. You can edit it later."
-      };
-      localStorage.setItem('userData', JSON.stringify(userData));
-      localStorage.setItem('profileUsername', username);
-      localStorage.setItem('profileBio', userData[username].bio);
-      alert('Account created!');
-      window.location.href = 'profile.html';
+      return;
     }
 
-    function continueAsGuest() {
-      let guestCount = parseInt(localStorage.getItem('guestCount') || '0');
-      let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+    // Create new account
+    users.push(username);
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
 
-      // Find a unique guest name
-      let guestName;
-      do {
-        guestCount++;
-        guestName = "Guest " + guestCount;
-      } while (users.includes(guestName));
+    userData[username] = {
+      password: password,
+      bio: "This is your default bio. You can edit it later.",
+      bits: 0 // 💰 Starting bits
+    };
+    localStorage.setItem('userData', JSON.stringify(userData));
 
-      // Save new guest info
-      localStorage.setItem('guestCount', guestCount);
-      localStorage.setItem('profileUsername', guestName);
-      localStorage.setItem('profileBio', "I'm playing as a guest!");
+    localStorage.setItem('profileUsername', username);
+    localStorage.setItem('profileBio', userData[username].bio);
 
-      alert("You're now playing as " + guestName);
-      window.location.href = 'profile.html';
-    }
+    alert('Account created!');
+    window.location.href = 'profile.html';
+  }
 
-    function updateNavLinks() {
-      const username = localStorage.getItem('profileUsername');
-      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
-      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
-    }
+  function continueAsGuest() {
+    let guestCount = parseInt(localStorage.getItem('guestCount') || '0');
+    let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
 
-    function logout() {
-      localStorage.removeItem('profileUsername');
-      localStorage.removeItem('profileBio');
-      updateNavLinks();
-      window.location.href = 'login.html';
-    }
+    let guestName;
+    do {
+      guestCount++;
+      guestName = "Guest " + guestCount;
+    } while (users.includes(guestName));
 
-    document.addEventListener('DOMContentLoaded', updateNavLinks);
-  </script>
+    localStorage.setItem('guestCount', guestCount);
+    localStorage.setItem('profileUsername', guestName);
+    localStorage.setItem('profileBio', "I'm playing as a guest!");
+
+    alert("You're now playing as " + guestName);
+    window.location.href = 'profile.html';
+  }
+
+  function updateNavLinks() {
+    const username = localStorage.getItem('profileUsername');
+    const isAdmin = username === "Nova";
+    document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+    document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
+    const adminBtn = document.getElementById("adminBtn");
+    if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+  }
+
+  function logout() {
+    localStorage.removeItem('profileUsername');
+    localStorage.removeItem('profileBio');
+    updateNavLinks();
+    window.location.href = 'login.html';
+  }
+
+  document.addEventListener('DOMContentLoaded', updateNavLinks);
+</script>
+
 
 
 
