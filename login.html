@@ -47,49 +47,52 @@
   </div>
 
 <script>
-  document.getElementById("loginForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-    const userData = JSON.parse(localStorage.getItem("userData")) || {};
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const userData = JSON.parse(localStorage.getItem("userData")) || {};
 
-    if (!userData[username]) {
-      return alert("User not found.");
-    }
-    const user = userData[username];
-    const now = Date.now();
+  if (!userData[username]) {
+    return alert("User not found.");
+  }
+  const user = userData[username];
+  const now  = Date.now();
 
-    // ——— BAN ENFORCEMENT ———
-    if (user.isBanned) {
-      // auto-unban if expired
-      if (user.banExpires && now > user.banExpires) {
-        user.isBanned = false;
-        delete user.banReason;
-        delete user.banExpires;
-        localStorage.setItem("userData", JSON.stringify(userData));
+  // —— BAN ENFORCEMENT ——
+  if (user.isBanned) {
+    if (user.banExpires && now > user.banExpires) {
+      // Auto-unban expired temp bans
+      user.isBanned   = false;
+      delete user.banReason;
+      delete user.banExpires;
+      localStorage.setItem("userData", JSON.stringify(userData));
+    } else {
+      let msg = "🚫 You are banned from PixelGame.";
+      msg += "\n\nReason: " + (user.banReason || "No reason provided.");
+      if (user.banExpires) {
+        msg += "\nBan expires: " + new Date(user.banExpires).toLocaleString();
       } else {
-        let msg = "🚫 You are banned from PixelGame.";
-        msg += "\n\nReason: " + (user.banReason || "No reason provided.");
-        if (user.banExpires) {
-          msg += "\nBan expires: " + new Date(user.banExpires).toLocaleString();
-        } else {
-          msg += "\nDuration: Permanent";
-        }
-        return alert(msg);
+        msg += "\nDuration: Permanent";
       }
+      return alert(msg);
     }
+  }
 
-    // check password
-    if (user.password !== password) {
-      return alert("Incorrect password.");
-    }
+  // —— PASSWORD CHECK ——
+  if (user.password !== password) {
+    return alert("Incorrect password.");
+  }
 
-    // successful
-    localStorage.setItem("profileUsername", username);
-    localStorage.setItem("profileBio", user.bio || "");
-    window.location.href = "profile.html";
-  });
+  // —— SUCCESSFUL LOGIN ——
+  user.lastLogin = now;
+  localStorage.setItem("userData", JSON.stringify(userData));
+  localStorage.setItem("profileUsername", username);
+  localStorage.setItem("profileBio", user.bio || "");
+  window.location.href = "profile.html";
+});
 </script>
+
 
 
 
