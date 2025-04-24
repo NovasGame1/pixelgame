@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    input, select, button {
+    input, button {
       margin: 4px 0;
       padding: 6px;
       font-size: 14px;
@@ -19,18 +19,30 @@
       background: #fff;
       border: 1px solid #aaa;
       padding: 15px;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
     .admin-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
       margin-top: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .admin-controls div {
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
 
     .admin-controls label {
+      width: 120px;
       font-weight: bold;
+    }
+
+    .flags {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 5px;
     }
   </style>
 </head>
@@ -55,25 +67,22 @@
     </header>
 
     <main>
-      <h2>Admin Panel</h2>
-      <p>Manage all user accounts below:</p>
-      <input type="text" id="searchBar" placeholder="Search users..." oninput="renderUserList()">
+      <h2>Admin Panel - Master Control</h2>
+      <input type="text" id="searchBar" placeholder="Search users..." oninput="renderUserList()" style="width: 100%; padding: 10px; margin: 15px 0;">
       <div id="adminUsers">Loading users...</div>
     </main>
 
-    <footer>
-      © 2025 PixelGame.
-    </footer>
+    <footer>© 2025 PixelGame.</footer>
   </div>
 
   <script>
     const currentAdmin = "Nova";
 
     function logout() {
-      localStorage.removeItem('profileUsername');
-      localStorage.removeItem('profileBio');
+      localStorage.removeItem("profileUsername");
+      localStorage.removeItem("profileBio");
       updateNavLinks();
-      window.location.href = 'login.html';
+      window.location.href = "login.html";
     }
 
     function updateNavLinks() {
@@ -81,16 +90,14 @@
       const isAdmin = username === currentAdmin;
       document.getElementById("loginLink").style.display = username ? "none" : "inline";
       document.getElementById("logoutLink").style.display = username ? "inline" : "none";
-      const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
+      document.getElementById("adminBtn").style.display = isAdmin ? "inline" : "none";
     }
 
     function updateBitsDisplay() {
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const username = localStorage.getItem("profileUsername");
       if (!username || !userData[username]) return;
-      const bits = userData[username].bits ?? 0;
-      document.getElementById("bitCountTop").innerText = bits;
+      document.getElementById("bitCountTop").innerText = userData[username].bits ?? 0;
     }
 
     function renderUserList() {
@@ -103,28 +110,54 @@
         if (!username.toLowerCase().includes(search)) continue;
         const user = userData[username];
 
-        const div = document.createElement("div");
-        div.className = "user-card";
+        const flags = [
+          user.isAdmin ? "Admin" : "User",
+          user.isBanned ? "Banned" : "Active"
+        ].join(" | ");
 
-        div.innerHTML = `
-          <strong>${username}</strong> (Joined: ${user.joinDate || "?"})<br>
-          Bits: ${user.bits ?? 0} | Friends: ${(user.friends ?? []).length}
-          <div class="admin-controls">
-            <label>Edit Username:</label>
-            <input type="text" id="newName-${username}" placeholder="New username" value="${username}">
-            <label>Edit Bio:</label>
-            <input type="text" id="newBio-${username}" placeholder="Bio" value="${user.bio || ""}">
-            <label>Set Bits:</label>
-            <input type="number" id="newBits-${username}" value="${user.bits ?? 0}">
-            <label>Set Password:</label>
-            <input type="text" id="newPass-${username}" placeholder="New password" value="${user.password || ""}">
-            <button onclick="applyChanges('${username}')">✅ Save Changes</button>
-            <button onclick="deleteUser('${username}')">🗑️ Delete User</button>
+        container.innerHTML += `
+          <div class="user-card">
+            <strong>${username}</strong>
+            <div class="flags">[${flags}]</div>
+            <div class="admin-controls">
+              <div><label>Username:</label><input type="text" id="newName-${username}" value="${username}"></div>
+              <div><label>Bio:</label><input type="text" id="newBio-${username}" value="${user.bio || ""}"></div>
+              <div><label>Bits:</label><input type="number" id="newBits-${username}" value="${user.bits ?? 0}"></div>
+              <div><label>Password:</label>
+                <input type="password" id="newPass-${username}" value="${user.password || ""}">
+                <button type="button" onclick="togglePassword('${username}')">👁️</button>
+              </div>
+              <div>
+                <button onclick="toggleAdmin('${username}')">${user.isAdmin ? 'Demote' : 'Promote'} Admin</button>
+                <button onclick="toggleBan('${username}')">${user.isBanned ? 'Unban' : 'Ban'} User</button>
+                <button onclick="applyChanges('${username}')">✅ Save</button>
+                <button onclick="deleteUser('${username}')">🗑️ Delete</button>
+              </div>
+            </div>
           </div>
         `;
-
-        container.appendChild(div);
       }
+    }
+
+    function togglePassword(username) {
+      const field = document.getElementById(`newPass-${username}`);
+      field.type = field.type === "password" ? "text" : "password";
+    }
+
+    function toggleAdmin(username) {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      if (!userData[username]) return;
+      userData[username].isAdmin = !userData[username].isAdmin;
+      localStorage.setItem("userData", JSON.stringify(userData));
+      renderUserList();
+    }
+
+    function toggleBan(username) {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      if (!userData[username]) return;
+      userData[username].isBanned = !userData[username].isBanned;
+      localStorage.setItem("userData", JSON.stringify(userData));
+      renderUserList();
     }
 
     function applyChanges(oldUsername) {
@@ -134,10 +167,8 @@
       const newBits = parseInt(document.getElementById(`newBits-${oldUsername}`).value) || 0;
       const newPass = document.getElementById(`newPass-${oldUsername}`).value;
 
-      if (!newName) return alert("Username cannot be empty!");
-
       if (newName !== oldUsername && userData[newName]) {
-        alert("A user with that name already exists.");
+        alert("Username already taken!");
         return;
       }
 
@@ -149,7 +180,7 @@
       user.password = newPass;
       userData[newName] = user;
 
-      // Update all friends lists
+      // Update friends lists
       for (const u in userData) {
         const friends = userData[u].friends || [];
         const index = friends.indexOf(oldUsername);
@@ -164,12 +195,11 @@
     }
 
     function deleteUser(username) {
-      if (!confirm(`Are you sure you want to delete ${username}? This cannot be undone.`)) return;
+      if (!confirm(`Are you sure you want to delete "${username}"?`)) return;
 
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       delete userData[username];
 
-      // Remove from friends lists
       for (const u in userData) {
         userData[u].friends = (userData[u].friends || []).filter(f => f !== username);
       }
@@ -181,10 +211,9 @@
     document.addEventListener("DOMContentLoaded", () => {
       const username = localStorage.getItem("profileUsername");
       if (username !== currentAdmin) {
-        document.body.innerHTML = "<div style='padding:30px;'><h2>Access Denied</h2><p>You are not an admin.</p></div>";
+        document.body.innerHTML = "<div style='padding:30px;'><h2>Access Denied</h2><p>This page is for Nova only.</p></div>";
         return;
       }
-
       updateNavLinks();
       updateBitsDisplay();
       renderUserList();
