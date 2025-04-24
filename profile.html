@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PixelGame - People</title>
+  <title>PixelGame - Profile</title>
 
   <!-- FAVICON -->
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <!-- Optional fallback for PNG -->
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -16,11 +18,10 @@
 
   <div class="page-wrapper">
     <header>
-      <!-- Logo -->
+      <!-- Logo in header -->
       <a href="index.html" class="site-logo-link">
         <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
       </a>
-
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
@@ -35,9 +36,10 @@
 
     <main>
       <div class="section-box">
-        <h2>Find Other Players</h2>
-        <input type="text" id="searchInput" placeholder="Search usernames..." oninput="searchPeople()" />
-        <div id="searchResults" style="margin-top: 20px;"></div>
+        <h2>Your Profile</h2>
+        <div id="profileContainer">
+          <!-- Profile content will be injected here -->
+        </div>
       </div>
     </main>
 
@@ -48,20 +50,19 @@
 
   <script>
     function logout() {
-      localStorage.removeItem("profileUsername");
-      localStorage.removeItem("profileBio");
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
       updateNavLinks();
-      updateBitsDisplay();
-      window.location.href = "login.html";
+      window.location.href = 'login.html';
     }
 
     function updateNavLinks() {
-      const username = localStorage.getItem("profileUsername");
+      const username = localStorage.getItem('profileUsername');
       const isAdmin = username === "Nova";
-      document.getElementById("loginLink").style.display  = username ? "none" : "inline";
-      document.getElementById("logoutLink").style.display = username ? "inline" : "none";
+      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
       const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
 
     function updateBitsDisplay() {
@@ -69,35 +70,17 @@
       const username = localStorage.getItem("profileUsername");
       if (!username || !userData[username]) return;
       const bits = userData[username].bits ?? 0;
-      const bitTop = document.getElementById("bitCountTop");
-      if (bitTop) bitTop.innerText = bits;
+      document.getElementById("bitCountTop").innerText = bits;
     }
 
-    function searchPeople() {
-      const query = document.getElementById("searchInput").value.toLowerCase();
+    function loadProfile() {
+      const username = localStorage.getItem("profileUsername");
+      if (!username) {
+        window.location.href = "login.html";
+        return;
+      }
+
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const results = Object.keys(userData)
-        .filter(user => user.toLowerCase().includes(query))
-        .map(user => {
-          return `
-            <div>
-              <strong>${user}</strong>
-              <button onclick="viewProfile('${user}')">View Profile</button>
-            </div>
-          `;
-        }).join('');
-      document.getElementById("searchResults").innerHTML = results || "<p>No results found.</p>";
-    }
+      const user = userData[username] || {};
 
-    function viewProfile(username) {
-      localStorage.setItem("viewingProfile", username);
-      window.location.href = "viewprofile.html";
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      updateNavLinks();
-      updateBitsDisplay();
-    });
-  </script>
-</body>
-</html>
+      document.get
