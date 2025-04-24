@@ -3,32 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <title>PixelGame – Admin Panel</title>
+
+  <!-- Logo -->
   <link rel="icon" href="assets/images/logo.png" type="image/png">
   <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
   <link rel="stylesheet" href="style.css">
+
   <style>
-    body { background: #f2f2f2; }
-    input, button, select { margin:4px 0; padding:6px; font-size:14px; }
-    .section-box { background:#fff; border:1px solid #aaa; padding:15px; margin-bottom:20px; }
-    .user-card { border:1px solid #ccc; background:#fff; padding:15px; margin-bottom:15px; }
+    body.light { background: #f2f2f2; color: #333; }
+    body.dark  { background: #222;   color: #eee; }
+    input, button, select, textarea {
+      margin: 4px 0; padding: 6px; font-size: 14px;
+    }
+    .section-box {
+      background: #fff; border: 1px solid #aaa;
+      padding: 15px; margin-bottom: 20px;
+    }
+    body.dark .section-box { background: #333; border-color: #555; }
+    .user-card {
+      border:1px solid #ccc; background:#fff;
+      padding:15px; margin-bottom:15px;
+    }
+    body.dark .user-card { background:#444; border-color:#666; }
     .admin-controls { display:grid; gap:6px; margin-top:10px; }
     .admin-controls div { display:flex; gap:10px; align-items:center; }
     .admin-controls label { width:120px; font-weight:bold; }
     .flags { font-size:0.9em; color:#666; margin-top:5px; }
-    #auditLog { background:#fff; border:1px solid #aaa; padding:15px; max-height:200px; overflow-y:auto; }
+    body.dark .flags { color:#999; }
+    #auditLog, #loginHistory, #flagsList {
+      background:#fff; border:1px solid #aaa;
+      padding:10px; max-height:150px; overflow-y:auto;
+      margin-top:10px;
+    }
+    body.dark #auditLog,
+    body.dark #loginHistory,
+    body.dark #flagsList { background:#333; border-color:#555; }
   </style>
 </head>
-<body>
+<body class="light">
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
   <div class="page-wrapper">
-
     <header>
       <a href="index.html" class="site-logo-link">
         <img src="assets/images/logo.png" class="site-logo" alt="PixelGame">
       </a>
       <nav>
-        <a href="index.html">Home</a><a href="games.html">Games</a>
-        <a href="profile.html">Profile</a><a href="people.html">People</a>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Profile</a>
+        <a href="people.html">People</a>
         <a href="shop.html">Shop</a>
         <a href="admin.html" id="adminBtn" style="display:none;">Admin Panel</a>
         <a href="login.html" id="loginLink">Login</a>
@@ -39,72 +62,78 @@
     <main>
       <h2>Admin Panel – Owner Control</h2>
 
-      <!-- 1. Maintenance Mode -->
+      <!-- Broadcast to All -->
       <div class="section-box">
-        <h3>Maintenance Mode</h3>
-        <button onclick="toggleMaintenance()">
-          <span id="maintenanceBtnLabel">Toggle Maintenance</span>
-        </button>
-      </div>
-
-      <!-- 2. Feature Flags -->
-      <div class="section-box">
-        <h3>Feature Flags</h3>
-        <div><label><input type="checkbox" id="flag-shopEnabled" onchange="toggleFeatureFlag('shopEnabled')"> Shop Enabled</label></div>
-        <div><label><input type="checkbox" id="flag-reportsEnabled" onchange="toggleFeatureFlag('reportsEnabled')"> Reports Enabled</label></div>
-        <div><label><input type="checkbox" id="flag-broadcastEnabled" onchange="toggleFeatureFlag('broadcastEnabled')"> Broadcast Enabled</label></div>
-      </div>
-
-      <!-- 3. Theme Switcher -->
-      <div class="section-box">
-        <h3>Theme</h3>
-        <button onclick="toggleTheme()">
-          <span id="themeBtnLabel">Toggle Dark/Light</span>
-        </button>
-      </div>
-
-      <!-- 4. Broadcast to All -->
-      <div class="section-box">
-        <h3>Broadcast Message</h3>
+        <h3>📣 Broadcast Message</h3>
         <input type="text" id="broadcastInput" placeholder="Your broadcast…">
-        <button onclick="broadcastAll()">Send</button>
+        <button onclick="broadcastAll()">Send to All</button>
       </div>
 
-      <!-- 5. Targeted Alert -->
+      <!-- Targeted Alert -->
       <div class="section-box">
-        <h3>Targeted Alert</h3>
+        <h3>🎯 Targeted Alert</h3>
         <select id="alertUserSelect"></select>
         <input type="text" id="alertInput" placeholder="Alert message…">
-        <button onclick="sendAlert()">Send</button>
+        <button onclick="sendAlert()">Send Alert</button>
       </div>
 
-      <!-- 6. Reporting System -->
+      <!-- Maintenance Mode -->
       <div class="section-box">
-        <h3>User Reports</h3>
-        <div id="reportsList">Loading reports…</div>
-        <button onclick="clearReports()">Clear All Reports</button>
+        <h3>🔧 Maintenance Mode</h3>
+        <button id="maintenanceBtn" onclick="toggleMaintenance()">Toggle Maintenance</button>
       </div>
 
-      <!-- 7. Leaderboard -->
+      <!-- Data Import/Export -->
       <div class="section-box">
-        <h3>Bits Leaderboard</h3>
-        <div id="leaderboard">Loading leaderboard…</div>
+        <h3>💾 Data Import/Export</h3>
+        <button onclick="exportUsers()">Export All Users</button>
+        <input type="file" id="importFile" accept=".json" onchange="importUsers(event)">
       </div>
 
-      <!-- 8. Backup & Restore -->
+      <!-- Feature Flags -->
       <div class="section-box">
-        <h3>Backup & Restore Data</h3>
-        <button onclick="downloadBackup()">Download Backup</button>
-        <input type="file" id="restoreFile" onchange="restoreBackup()" accept=".json">
+        <h3>🚩 Feature Flags</h3>
+        <input type="text" id="flagName" placeholder="Flag name…">
+        <button onclick="toggleFeatureFlag()">Toggle Flag</button>
+        <div id="flagsList">Loading flags…</div>
       </div>
 
-      <!-- 9. Search & Manage Users -->
-      <input type="text" id="searchBar" placeholder="Search users…" style="width:100%;padding:10px;margin:15px 0;" oninput="renderUserList()">
+      <!-- Theme Switcher -->
+      <div class="section-box">
+        <h3>🎨 Theme</h3>
+        <button onclick="switchTheme()">Switch Theme</button>
+      </div>
+
+      <!-- Homepage Content Editor -->
+      <div class="section-box">
+        <h3>🏠 Homepage Content</h3>
+        <input type="text" id="homeTitle" placeholder="Banner Title…">
+        <textarea id="homeDesc" rows="3" placeholder="Banner Description…"></textarea>
+        <button onclick="saveHomepageContent()">Save Content</button>
+      </div>
+
+      <!-- Bits Giveaway -->
+      <div class="section-box">
+        <h3>💰 Bits Giveaway</h3>
+        <input type="number" id="giveawayAmount" placeholder="Bits amount…">
+        <button onclick="giveBitsToAll()">Give to All</button>
+      </div>
+
+      <!-- Danger Zone: Clear Data -->
+      <div class="section-box">
+        <h3>⚠️ Danger Zone</h3>
+        <button onclick="clearAllData()">Clear All User Data</button>
+      </div>
+
+      <!-- Search & User Management -->
+      <input type="text" id="searchBar"
+             placeholder="Search users…" style="width:100%;padding:10px;margin:15px 0;"
+             oninput="renderUserList()">
       <div id="adminUsers">Loading users…</div>
 
-      <!-- 10. Audit Log -->
+      <!-- Audit Log -->
       <div class="section-box">
-        <h3>Audit Log</h3>
+        <h3>📜 Audit Log</h3>
         <div id="auditLog">Loading logs…</div>
       </div>
     </main>
@@ -115,7 +144,7 @@
   <script>
     const OWNER = "Nova";
 
-    /* Core Helpers */
+    // Basic UI updates
     function logout() {
       localStorage.removeItem("profileUsername");
       localStorage.removeItem("profileBio");
@@ -133,277 +162,302 @@
       const me = localStorage.getItem("profileUsername");
       if(ud[me]) document.getElementById("bitCountTop").innerText = ud[me].bits||0;
     }
-    function logAction(action, target, details="") {
+
+    // Audit logging
+    function logAction(action,target,details="") {
       const logs = JSON.parse(localStorage.getItem("adminAuditLog"))||[];
       logs.unshift({ time:new Date().toLocaleString(), admin:OWNER, action, target, details });
       localStorage.setItem("adminAuditLog", JSON.stringify(logs));
       renderAuditLog();
     }
+    function renderAuditLog(){
+      const logs=JSON.parse(localStorage.getItem("adminAuditLog"))||[];
+      document.getElementById("auditLog").innerHTML =
+        logs.slice(0,50).map(l=>`[${l.time}] ${l.admin} ${l.action} ${l.target} ${l.details}`)
+             .join("<br>");
+    }
 
-    /* 1. Maintenance Mode */
-    function toggleMaintenance() {
+    // Broadcast
+    function broadcastAll(){
+      const msg=document.getElementById("broadcastInput").value.trim();
+      if(!msg) return alert("Type a message.");
+      localStorage.setItem("broadcastMessage", msg);
+      logAction("Broadcasted","ALL",msg);
+      alert("Broadcast queued.");
+    }
+
+    // Targeted alerts
+    function sendAlert(){
+      const user=document.getElementById("alertUserSelect").value;
+      const msg =document.getElementById("alertInput").value.trim();
+      if(!user||!msg) return alert("Select user & message.");
+      const alerts=JSON.parse(localStorage.getItem("userAlerts"))||{};
+      alerts[user]=alerts[user]||[];
+      alerts[user].push({by:OWNER,time:new Date().toLocaleString(),msg});
+      localStorage.setItem("userAlerts",JSON.stringify(alerts));
+      logAction("Alerted",user,msg);
+      alert("Alert sent.");
+    }
+
+    // Maintenance Mode
+    function toggleMaintenance(){
       const m = JSON.parse(localStorage.getItem("maintenanceMode"))||false;
       localStorage.setItem("maintenanceMode", JSON.stringify(!m));
-      document.getElementById("maintenanceBtnLabel").innerText = !m ? "Disable Maintenance" : "Enable Maintenance";
-      logAction("Toggled Maintenance", "", `Now ${!m}`);
-    }
-    /* 2. Feature Flags */
-    const featureFlags = ["shopEnabled","reportsEnabled","broadcastEnabled"];
-    function initFeatureFlags() {
-      const f = JSON.parse(localStorage.getItem("featureFlags"))||{};
-      featureFlags.forEach(flag=>{
-        const val = f[flag]||false;
-        document.getElementById(`flag-${flag}`).checked = val;
-      });
-    }
-    function toggleFeatureFlag(flag) {
-      const f = JSON.parse(localStorage.getItem("featureFlags"))||{};
-      f[flag] = !f[flag];
-      localStorage.setItem("featureFlags", JSON.stringify(f));
-      logAction("Toggled Flag", flag, f[flag]);
+      document.getElementById("maintenanceBtn").innerText = !m ? "Disable Maintenance" : "Enable Maintenance";
+      logAction(!m?"Enabled Maintenance":"Disabled Maintenance","ALL");
     }
 
-    /* 3. Theme */
-    function toggleTheme() {
-      const t = localStorage.getItem("theme")==="dark" ? "light" : "dark";
-      localStorage.setItem("theme", t);
-      document.body.className = t;
-      logAction("Theme", "", t);
+    // Data Export/Import
+    function exportUsers(){
+      const data = localStorage.getItem("userData") || "{}";
+      const blob = new Blob([data],{type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url; a.download="userData.json"; a.click();
+      URL.revokeObjectURL(url);
+      logAction("Exported","userData");
     }
-    function initTheme() {
-      const t = localStorage.getItem("theme")||"light";
-      document.body.className = t;
-    }
-
-    /* 4. Broadcast */
-    function broadcastAll() {
-      const msg = document.getElementById("broadcastInput").value.trim();
-      if(!msg) return alert("Enter a message");
-      localStorage.setItem("broadcastMessage", msg);
-      logAction("Broadcast", "ALL", msg);
-      alert("Broadcast queued");
-    }
-
-    /* 5. Targeted Alerts */
-    function sendAlert() {
-      const user = document.getElementById("alertUserSelect").value;
-      const msg  = document.getElementById("alertInput").value.trim();
-      if(!user||!msg) return alert("Select user & message");
-      const alerts = JSON.parse(localStorage.getItem("userAlerts"))||{};
-      alerts[user] = alerts[user]||[];
-      alerts[user].push({ by:OWNER, time:new Date().toLocaleString(), msg });
-      localStorage.setItem("userAlerts", JSON.stringify(alerts));
-      logAction("Alert", user, msg);
-      alert("Alert sent");
-    }
-
-    /* 6. Reports */
-    function renderReports() {
-      const reps = JSON.parse(localStorage.getItem("reports"))||[];
-      const c = document.getElementById("reportsList");
-      if(!reps.length) return c.innerText="No reports.";
-      c.innerHTML = reps.map(r=>`[${r.time}] ${r.reporter} ➔ ${r.target}: ${r.reason}`)
-                        .join("<br>");
-    }
-    function clearReports() {
-      if(!confirm("Clear all reports?")) return;
-      localStorage.removeItem("reports");
-      renderReports();
-      logAction("Cleared Reports","ALL");
-    }
-
-    /* 7. Leaderboard */
-    function renderLeaderboard() {
-      const ud = JSON.parse(localStorage.getItem("userData"))||{};
-      const arr = Object.entries(ud).map(([u,d])=>({u,bits:d.bits||0}));
-      arr.sort((a,b)=>b.bits-a.bits);
-      const top = arr.slice(0,5);
-      document.getElementById("leaderboard").innerHTML =
-        top.map((p,i)=>`${i+1}. ${p.u} – ${p.bits} Bits`).join("<br>");
-    }
-
-    /* 8. Backup & Restore */
-    function downloadBackup() {
-      const data = {
-        userData: JSON.parse(localStorage.getItem("userData"))||{},
-        adminAuditLog: JSON.parse(localStorage.getItem("adminAuditLog"))||[],
-        reports: JSON.parse(localStorage.getItem("reports"))||[],
-        loginLogs: JSON.parse(localStorage.getItem("loginLogs"))||[],
-        featureFlags: JSON.parse(localStorage.getItem("featureFlags"))||{},
-        userAlerts: JSON.parse(localStorage.getItem("userAlerts"))||{}
-      };
-      const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement("a");
-      a.href = url; a.download="pixelgame-backup.json";
-      a.click(); URL.revokeObjectURL(url);
-    }
-    function restoreBackup() {
-      const file = document.getElementById("restoreFile").files[0];
+    function importUsers(evt){
+      const file=evt.target.files[0];
       if(!file) return;
-      const reader = new FileReader();
-      reader.onload = e=>{
-        const data = JSON.parse(e.target.result);
-        Object.keys(data).forEach(k=>localStorage.setItem(k,JSON.stringify(data[k])));
-        alert("Backup restored, reloading…");
-        location.reload();
+      const reader=new FileReader();
+      reader.onload=e=>{
+        try {
+          const imported=JSON.parse(e.target.result);
+          localStorage.setItem("userData",JSON.stringify(imported));
+          logAction("Imported","userData");
+          renderUserList();
+          alert("Import successful.");
+        } catch {
+          alert("Invalid JSON.");
+        }
       };
       reader.readAsText(file);
     }
 
-    /* 9. User Management Utilities */
-    function togglePassword(u){
-      const f=document.getElementById(`newPass-${u}`);
-      f.type=f.type==="password"?"text":"password";
+    // Feature Flags
+    function toggleFeatureFlag(){
+      const name=document.getElementById("flagName").value.trim();
+      if(!name) return alert("Flag name?");
+      const flags=JSON.parse(localStorage.getItem("featureFlags"))||{};
+      flags[name]=!flags[name];
+      localStorage.setItem("featureFlags",JSON.stringify(flags));
+      logAction("ToggledFlag",name,flags[name]);
+      renderFlags();
     }
-    function toggleAdmin(u){const d=JSON.parse(localStorage.getItem("userData"))||{};d[u].isAdmin=!d[u].isAdmin;localStorage.setItem("userData",JSON.stringify(d));logAction(d[u].isAdmin?"Promoted":"Demoted",u);renderUserList();}
-    function toggleLock(u){
-      const d=JSON.parse(localStorage.getItem("userData"))||{},us=d[u];
-      if(!us.isLocked){
-        const r=prompt(`Lock reason for ${u}:`)||"No reason";
-        let t=prompt("Minutes to lock?");let ex=null; if(t&&!isNaN(t))ex=Date.now()+parseInt(t)*60000;
-        us.isLocked=true;us.lockReason=r;us.lockExpires=ex;
-        logAction("Locked",u,r+(ex?` until ${new Date(ex).toLocaleString()}`:""));
-      } else {
-        us.isLocked=false;delete us.lockReason;delete us.lockExpires;
-        logAction("Unlocked",u);
-      }
-      localStorage.setItem("userData",JSON.stringify(d));renderUserList();
-    }
-    function toggleBan(u){
-      const d=JSON.parse(localStorage.getItem("userData"))||{},us=d[u];
-      if(!us.isBanned){
-        const r=prompt(`Ban reason for ${u}:`)||"No reason";
-        let t=prompt("Minutes to ban?");let ex=null; if(t&&!isNaN(t))ex=Date.now()+parseInt(t)*60000;
-        us.isBanned=true;us.banReason=r;us.banExpires=ex;
-        logAction("Banned",u,r+(ex?` until ${new Date(ex).toLocaleString()}`:""));
-      } else {
-        us.isBanned=false;delete us.banReason;delete us.banExpires;
-        logAction("Unbanned",u);
-      }
-      localStorage.setItem("userData",JSON.stringify(d));renderUserList();
-    }
-    function resetStats(u){
-      if(!confirm(`Reset stats for ${u}?`))return;
-      const d=JSON.parse(localStorage.getItem("userData"))||{},us=d[u];
-      us.bits=0;us.bio="";us.friends=[];us.shirtsEquipped=null;us.pantsEquipped=null;
-      logAction("ResetStats",u);
-      localStorage.setItem("userData",JSON.stringify(d));renderUserList();
-    }
-    function deleteUser(u){
-      if(!confirm(`Delete ${u}?`))return;
-      const d=JSON.parse(localStorage.getItem("userData"))||{};
-      delete d[u];
-      for(const x in d) d[x].friends=(d[x].friends||[]).filter(f=>f!==u);
-      logAction("Deleted",u);
-      localStorage.setItem("userData",JSON.stringify(d));renderUserList();
+    function renderFlags(){
+      const flags=JSON.parse(localStorage.getItem("featureFlags"))||{};
+      const out=Object.entries(flags).map(([k,v])=>`${k}: ${v}`).join("<br>");
+      document.getElementById("flagsList").innerHTML = out||"<i>No flags set</i>";
     }
 
-    /* 10. Reports dropdown population and user list render */
+    // Theme switcher
+    function switchTheme(){
+      const cur=localStorage.getItem("theme")||"light";
+      const nxt=cur==="light"?"dark":"light";
+      document.body.classList.replace(cur,nxt);
+      localStorage.setItem("theme",nxt);
+      logAction("Theme","Set",nxt);
+    }
+    function initTheme(){
+      const t=localStorage.getItem("theme")||"light";
+      document.body.classList.add(t);
+    }
+
+    // Homepage content
+    function saveHomepageContent(){
+      const t=document.getElementById("homeTitle").value;
+      const d=document.getElementById("homeDesc").value;
+      localStorage.setItem("homeTitle",t);
+      localStorage.setItem("homeDesc",d);
+      logAction("Edited","Homepage",`${t} | ${d}`);
+      alert("Homepage updated.");
+    }
+    function loadHomepageContent(){
+      document.getElementById("homeTitle").value = localStorage.getItem("homeTitle")||"";
+      document.getElementById("homeDesc").value  = localStorage.getItem("homeDesc")||"";
+    }
+
+    // Bits Giveaway
+    function giveBitsToAll(){
+      const amt = parseInt(document.getElementById("giveawayAmount").value);
+      if(isNaN(amt)) return alert("Enter a number");
+      const ud=JSON.parse(localStorage.getItem("userData"))||{};
+      for(const u in ud) ud[u].bits = (ud[u].bits||0) + amt;
+      localStorage.setItem("userData",JSON.stringify(ud));
+      logAction("GaveBits","ALL",amt);
+      updateBitsDisplay();
+      renderUserList();
+      alert(`Gave ${amt} Bits to everyone.`);
+    }
+
+    // Clear all data
+    function clearAllData(){
+      if(confirm("Delete ALL userData?")) {
+        localStorage.removeItem("userData");
+        logAction("Cleared","AllUserData");
+        renderUserList();
+        alert("All user data cleared.");
+      }
+    }
+
+    // User actions
+    function togglePassword(username){
+      const f=document.getElementById(`newPass-${username}`);
+      f.type = f.type==="password"?"text":"password";
+    }
+    function toggleAdmin(username){
+      const ud=JSON.parse(localStorage.getItem("userData"))||{};
+      ud[username].isAdmin = !ud[username].isAdmin;
+      localStorage.setItem("userData",JSON.stringify(ud));
+      logAction(ud[username].isAdmin?"Promoted":"Demoted",username);
+      renderUserList();
+    }
+    function toggleLock(username){
+      const ud=JSON.parse(localStorage.getItem("userData"))||{};
+      const u=ud[username];
+      if(!u.isLocked){
+        const r=prompt(`Reason to lock ${username}:` )||"No reason";
+        const d=prompt("Minutes to lock (blank=perm):");
+        u.isLocked=true; u.lockReason=r;
+        if(d&&!isNaN(d)) u.lockExpires=Date.now()+parseInt(d)*60000;
+        alert(`${username} locked.`);
+        logAction("Locked",username,r);
+      } else {
+        u.isLocked=false;delete u.lockReason;delete u.lockExpires;
+        alert(`${username} unlocked.`); logAction("Unlocked",username);
+      }
+      localStorage.setItem("userData",JSON.stringify(ud));
+      renderUserList();
+    }
+    function toggleBan(username){
+      const ud=JSON.parse(localStorage.getItem("userData"))||{};
+      const u=ud[username];
+      if(!u.isBanned){
+        const r=prompt(`Ban reason for ${username}:`)||"No reason";
+        const d=prompt("Minutes to ban (blank=perm):");
+        u.isBanned=true; u.banReason=r;
+        if(d&&!isNaN(d)) u.banExpires=Date.now()+parseInt(d)*60000;
+        alert(`${username} banned.`); logAction("Banned",username,r);
+      } else {
+        u.isBanned=false; delete u.banReason; delete u.banExpires;
+        alert(`${username} unbanned.`); logAction("Unbanned",username);
+      }
+      localStorage.setItem("userData",JSON.stringify(ud));
+      renderUserList();
+    }
+    function resetStats(username){
+      if(!confirm(`Reset stats for ${username}?`)) return;
+      const ud=JSON.parse(localStorage.getItem("userData"))||{};
+      const u=ud[username];
+      u.bits=0; u.bio=""; u.friends=[]; u.shirtsEquipped=null; u.pantsEquipped=null;
+      localStorage.setItem("userData",JSON.stringify(ud));
+      logAction("ResetStats",username);
+      renderUserList();
+    }
+    function applyChanges(oldUsername){
+      const ud=JSON.parse(localStorage.getItem("userData"))||{};
+      const newName=document.getElementById(`newName-${oldUsername}`).value.trim();
+      if(newName!==oldUsername && ud[newName]){ alert("Name taken"); return; }
+      const u=ud[oldUsername];
+      const newBio=document.getElementById(`newBio-${oldUsername}`).value;
+      const newBits=parseInt(document.getElementById(`newBits-${oldUsername}`).value)||0;
+      const newPass=document.getElementById(`newPass-${oldUsername}`).value;
+      if(newPass.length>0 && newPass.length<6){ alert("Pw ≥6 chars"); return; }
+      delete ud[oldUsername];
+      u.username=newName; u.bio=newBio; u.bits=newBits; u.password=newPass;
+      ud[newName]=u;
+      for(const x in ud){
+        const f=ud[x].friends||[];
+        const i=f.indexOf(oldUsername);
+        if(i!==-1){ f[i]=newName; ud[x].friends=f; }
+      }
+      localStorage.setItem("userData",JSON.stringify(ud));
+      logAction("Edited",oldUsername,`→${newName}`);
+      renderUserList();
+    }
+    function deleteUser(username){
+      if(!confirm(`Delete ${username}?`)) return;
+      const ud=JSON.parse(localStorage.getItem("userData"))||{};
+      delete ud[username];
+      for(const x in ud){
+        ud[x].friends=(ud[x].friends||[]).filter(f=>f!==username);
+      }
+      localStorage.setItem("userData",JSON.stringify(ud));
+      logAction("Deleted",username);
+      renderUserList();
+    }
+
+    // Render users & init dropdown
     function renderUserList(){
       const ud=JSON.parse(localStorage.getItem("userData"))||{};
       const s=document.getElementById("searchBar").value.toLowerCase();
-      const c=document.getElementById("adminUsers");
-      c.innerHTML=""; const sel=document.getElementById("alertUserSelect");
-      sel.innerHTML="<option value=''>Select…</option>";
+      const ct=document.getElementById("adminUsers");
+      const sel=document.getElementById("alertUserSelect");
+      ct.innerHTML=""; sel.innerHTML="<option value=''>Select…</option>";
       const now=Date.now();
-      for(const u in ud){
-        if(!u.toLowerCase().includes(s)) continue;
-        const us=ud[u];
-        /* auto expiry */
-        if(us.isLocked&&us.lockExpires&&now>us.lockExpires){us.isLocked=false;delete us.lockReason;delete us.lockExpires;}
-        if(us.isBanned&&us.banExpires&&now>us.banExpires){us.isBanned=false;delete us.banReason;delete us.banExpires;}
-        /* alert dropdown */
-        const o=document.createElement("option");o.value=u;o.innerText=u;sel.appendChild(o);
-        /* flags */
-        const flags=[];flags.push(us.isAdmin?"Admin":"User");
-        flags.push(us.isLocked?"Locked":"Unlocked");
-        if(us.isLocked&&us.lockExpires)flags.push(`🔒 ${((us.lockExpires-now)/60000|0)}m`);
-        flags.push(us.isBanned?"Banned":"Active");
-        if(us.isBanned&&us.banExpires)flags.push(`⏱ ${((us.banExpires-now)/60000|0)}m`);
-        /* render card */
-        c.innerHTML+=`
+      for(const username in ud){
+        if(!username.toLowerCase().includes(s)) continue;
+        const u=ud[username];
+        // auto-unlock/unban
+        if(u.isLocked && u.lockExpires && now>u.lockExpires){ u.isLocked=false; delete u.lockReason; delete u.lockExpires; }
+        if(u.isBanned && u.banExpires && now>u.banExpires){ u.isBanned=false; delete u.banReason; delete u.banExpires; }
+        // alert dropdown
+        const opt=document.createElement("option");
+        opt.value=username; opt.innerText=username;
+        sel.appendChild(opt);
+        // flags
+        let flags=[];
+        flags.push(u.isAdmin?"Admin":"User");
+        flags.push(u.isLocked?"Locked":"Unlocked");
+        if(u.isLocked&&u.lockExpires) flags.push(`${((u.lockExpires-now)/60000|0)}m lock`);
+        flags.push(u.isBanned?"Banned":"Active");
+        if(u.isBanned&&u.banExpires) flags.push(`${((u.banExpires-now)/60000|0)}m ban`);
+        // tags
+        if(u.tags?.length) flags.push("Tags:"+u.tags.join(","));
+        ct.innerHTML+=`
           <div class="user-card">
-            <strong>${u}</strong>
+            <strong>${username}</strong>
             <div class="flags">${flags.join(" | ")}</div>
-            ${us.isBanned?`<div style="color:red"><b>Ban:</b>${us.banReason}</div>`:""}
-            ${us.isLocked?`<div style="color:orange"><b>Lock:</b>${us.lockReason}</div>`:""}
+            ${u.isBanned?`<div style="color:red"><b>Reason:</b> ${u.banReason}</div>`:""}
+            ${u.isLocked?`<div style="color:orange"><b>Lock Reason:</b> ${u.lockReason}</div>`:""}
             <div class="admin-controls">
-              <div><label>Username:</label><input type="text" id="newName-${u}" value="${u}"></div>
-              <div><label>Role:</label>
-                <select id="newRole-${u}">
-                  <option${us.role==="User"?" selected":""}>User</option>
-                  <option${us.role==="Moderator"?" selected":""}>Moderator</option>
-                  <option${us.role==="Admin"?" selected":""}>Admin</option>
-                </select>
-              </div>
-              <div><label>Tags:</label><input type="text" id="tags-${u}" placeholder="tag1,tag2" value="${(us.tags||[]).join(",")}"></div>
-              <div><label>Bio:</label><input type="text" id="newBio-${u}" value="${us.bio||""}"></div>
-              <div><label>Bits:</label><input type="number" id="newBits-${u}" value="${us.bits||0}"></div>
+              <div><label>Username:</label><input type="text" id="newName-${username}" value="${username}"></div>
+              <div><label>Bio:</label><input type="text" id="newBio-${username}" value="${u.bio||""}"></div>
+              <div><label>Bits:</label><input type="number" id="newBits-${username}" value="${u.bits||0}"></div>
               <div>
                 <label>Password:</label>
-                <input type="password" id="newPass-${u}" value="${us.password||""}">
-                <button onclick="togglePassword('${u}')">👁️</button>
+                <input type="password" id="newPass-${username}" value="${u.password||""}">
+                <button onclick="togglePassword('${username}')">👁️</button>
+              </div>
+              <div><label>Tags:</label>
+                <input type="text" id="newTags-${username}" placeholder="a,b,c" value="${u.tags?.join(",")||""}">
               </div>
               <div>
-                <button onclick="toggleAdmin('${u}')"> ${us.isAdmin?"Demote":"Promote"} Admin</button>
-                <button onclick="toggleLock('${u}')"> ${us.isLocked?"Unlock":"Lock"} Account</button>
-                <button onclick="toggleBan('${u}')"> ${us.isBanned?"Unban":"Ban"} User</button>
-                <button onclick="resetStats('${u}')">Reset Stats</button>
-                <button onclick="applyChanges('${u}')">Save Changes</button>
-                <button onclick="deleteUser('${u}')">Delete User</button>
+                <button onclick="toggleAdmin('${username}')">${u.isAdmin?"Demote":"Promote"} Admin</button>
+                <button onclick="toggleLock('${username}')">${u.isLocked?"Unlock":"Lock"} Account</button>
+                <button onclick="toggleBan('${username}')">${u.isBanned?"Unban":"Ban"} User</button>
+                <button onclick="resetStats('${username}')">Reset Stats</button>
+                <button onclick="applyChanges('${username}')">Save</button>
+                <button onclick="deleteUser('${username}')">Delete</button>
               </div>
             </div>
           </div>`;
       }
-      renderReports();
-      renderLeaderboard();
     }
 
-    /* 11. Leaderboard & Reports & Audit on load */
-    function renderAuditLog(){
-      const logs=JSON.parse(localStorage.getItem("adminAuditLog"))||[];
-      document.getElementById("auditLog").innerHTML =
-        logs.slice(0,20).map(l=>`[${l.time}] ${l.admin} ${l.action} ${l.target} ${l.details}`).join("<br>");
-    }
-
-    /* 12. Apply changes now handling role & tags */
-    function applyChanges(oldU){
-      const ud=JSON.parse(localStorage.getItem("userData"))||{};
-      const eName=document.getElementById(`newName-${oldU}`).value.trim();
-      const eRole=document.getElementById(`newRole-${oldU}`).value;
-      const eTags=document.getElementById(`tags-${oldU}`).value.split(",").map(t=>t.trim()).filter(t=>t);
-      const eBio=document.getElementById(`newBio-${oldU}`).value;
-      const eBits=parseInt(document.getElementById(`newBits-${oldU}`).value)||0;
-      const ePass=document.getElementById(`newPass-${oldU}`).value;
-
-      if(eName!==oldU && ud[eName]) return alert("Name taken");
-      const u=ud[oldU];
-      delete ud[oldU];
-      u.username=eName; u.role=eRole; u.tags=eTags;
-      u.bio=eBio; u.bits=eBits; u.password=ePass;
-      ud[eName]=u;
-      for(const x in ud){
-        const fr=ud[x].friends||[]; 
-        const i=fr.indexOf(oldU);
-        if(i!==-1){fr[i]=eName; ud[x].friends=fr;}
-      }
-      localStorage.setItem("userData",JSON.stringify(ud));
-      logAction("Edited",oldU,`to ${eName}, role:${eRole}, tags:${eTags.join(",")}`);
-      renderUserList();
-    }
-
-    /* On load */
     document.addEventListener("DOMContentLoaded",()=>{
-      const me=localStorage.getItem("profileUsername");
+      // Owner-only
+      const me = localStorage.getItem("profileUsername");
       if(me!==OWNER){
-        document.body.innerHTML="<div style='padding:30px;'><h2>Access Denied</h2><p>Owner only.</p></div>";
+        document.body.innerHTML = "<div style='padding:30px;'><h2>Access Denied</h2><p>Owner only.</p></div>";
         return;
       }
-      initTheme();
-      initFeatureFlags();
       updateNavLinks();
       updateBitsDisplay();
+      initTheme();
+      renderFlags();
+      loadHomepageContent();
       renderUserList();
       renderAuditLog();
     });
