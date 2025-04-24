@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PixelGame - Profile</title>
+  <title>PixelGame - People</title>
 
   <!-- FAVICON -->
   <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -16,7 +16,7 @@
 
   <div class="page-wrapper">
     <header>
-      <!-- Site logo -->
+      <!-- Logo -->
       <a href="index.html" class="site-logo-link">
         <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
       </a>
@@ -35,11 +35,9 @@
 
     <main>
       <div class="section-box">
-        <h2>Welcome, <span id="profileUsername">Guest</span>!</h2>
-        <p>About Me:</p>
-        <textarea id="bioBox" placeholder="Write something..." rows="4" cols="50"></textarea>
-        <br><br>
-        <button onclick="saveBio()">Save Bio</button>
+        <h2>Find Other Players</h2>
+        <input type="text" id="searchInput" placeholder="Search usernames..." oninput="searchPeople()" />
+        <div id="searchResults" style="margin-top: 20px;"></div>
       </div>
     </main>
 
@@ -75,28 +73,30 @@
       if (bitTop) bitTop.innerText = bits;
     }
 
-    function saveBio() {
-      const newBio = document.getElementById("bioBox").value;
-      const username = localStorage.getItem("profileUsername");
+    function searchPeople() {
+      const query = document.getElementById("searchInput").value.toLowerCase();
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      if (!username || !userData[username]) return;
-      userData[username].bio = newBio;
-      localStorage.setItem("userData", JSON.stringify(userData));
-      alert("Bio saved!");
+      const results = Object.keys(userData)
+        .filter(user => user.toLowerCase().includes(query))
+        .map(user => {
+          return `
+            <div>
+              <strong>${user}</strong>
+              <button onclick="viewProfile('${user}')">View Profile</button>
+            </div>
+          `;
+        }).join('');
+      document.getElementById("searchResults").innerHTML = results || "<p>No results found.</p>";
+    }
+
+    function viewProfile(username) {
+      localStorage.setItem("viewingProfile", username);
+      window.location.href = "viewprofile.html";
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       updateNavLinks();
       updateBitsDisplay();
-      const username = localStorage.getItem("profileUsername");
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      if (username) {
-        document.getElementById("profileUsername").innerText = username;
-        const user = userData[username];
-        if (user && user.bio) {
-          document.getElementById("bioBox").value = user.bio;
-        }
-      }
     });
   </script>
 </body>
