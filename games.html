@@ -27,24 +27,9 @@
       align-items: center;
       justify-content: space-between;
     }
-    .game-icon {
-      width: 80px;
-      height: 80px;
-      margin-right: 20px;
-      background: #ddd;
-      border-radius: 5px;
-      flex-shrink: 0;
-    }
-    .game-info {
-      flex-grow: 1;
-    }
     .game-info h3 {
-      margin: 0 0 8px;
+      margin: 0 0 5px;
       font-size: 1.2em;
-    }
-    .game-info button {
-      padding: 8px 12px;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -78,40 +63,15 @@
   </div>
 
   <script>
-    /* Shared: bits HUD & nav links */
-    function getUser() {
-      const username = localStorage.getItem('profileUsername');
-      const userData = JSON.parse(localStorage.getItem('userData')||'{}');
-      return { username, data: userData[username]||{} };
-    }
+    // — your existing updateNavLinks() & updateBitsDisplay() here —
 
-    function updateBitsDisplay() {
-      const { data } = getUser();
-      const bits = data.bits || 0;
-      const el = document.getElementById('bitCountTop');
-      if (el) el.textContent = bits;
-    }
-
-    function updateNavLinks() {
-      const { username } = getUser();
-      document.getElementById('loginLink').style.display  = username ? 'none' : 'inline';
-      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
-      const adminBtn = document.getElementById('adminBtn');
-      if (adminBtn) adminBtn.style.display = (username==='Nova') ? 'inline' : 'none';
-    }
-
-    function logout() {
-      localStorage.removeItem('profileUsername');
-      localStorage.removeItem('profileBio');
+    // Fetch and render the list of games from your GitHub Pages /games folder
+    document.addEventListener('DOMContentLoaded', () => {
       updateNavLinks();
       updateBitsDisplay();
-      window.location.href = 'login.html';
-    }
 
-    /* Dynamic games list */
-    function loadGames() {
-      fetch('https://NovasGame1.github.io/pixelgame-uploader/games.json')
-        .then(res => res.json())
+      fetch('https://raw.githubusercontent.com/NovasGame1/pixelgame/main/games/games.json')
+        .then(r => r.json())
         .then(games => {
           const container = document.getElementById('gameList');
           container.innerHTML = '';
@@ -119,11 +79,9 @@
             const card = document.createElement('div');
             card.className = 'game-card';
             card.innerHTML = `
-              <div style="display:flex; align-items:center;">
-                <div class="game-icon"></div>
-                <div class="game-info">
-                  <h3>${game.name}</h3>
-                </div>
+              <div class="game-info">
+                <h3>${game.name}</h3>
+                <p>${game.desc || ''}</p>
               </div>
               <button onclick="window.location.href='pixelgame://play/${game.name}'">
                 Play
@@ -133,15 +91,9 @@
           });
         })
         .catch(err => {
-          document.getElementById('gameList').innerText = 'Failed to load games.';
           console.error(err);
+          document.getElementById('gameList').innerText = 'Failed to load games.';
         });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      updateNavLinks();
-      updateBitsDisplay();
-      loadGames();
     });
   </script>
 </body>
