@@ -2,25 +2,64 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PixelGame</title>
+  <title>PixelGame - Home</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Favicon: your custom logo in the browser tab -->
   <link rel="icon" href="assets/images/logo.png" type="image/png">
+
+  <style>
+    /* Bits HUD styling */
+    #bitsDisplay {
+      position: fixed;
+      top: 10px;
+      right: 20px;
+      background: #fff;
+      border: 2px solid #444;
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* Header logo styling */
+    .site-logo-link {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 20px;
+    }
+    .site-logo {
+      height: 40px; /* adjust as needed */
+      width: auto;
+    }
+    header nav {
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <a href="index.html" class="site-logo-link">
-      <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
-    </a>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="games.html">Games</a>
-      <!-- etc -->
-    </nav>
-  </header>
-  <!-- rest of page -->
-</body>
-</html>
+  <!-- Bits HUD -->
+  <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
 
+  <div class="page-wrapper">
+    <header>
+      <!-- Your custom logo -->
+      <a href="index.html" class="site-logo-link">
+        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
+      </a>
+
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Profile</a>
+        <a href="people.html">People</a>
+        <a href="shop.html">Shop</a>
+        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+      </nav>
+    </header>
 
     <main>
       <div class="section-box home-content">
@@ -60,15 +99,4 @@
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const username = localStorage.getItem("profileUsername");
       if (!username || !userData[username]) return;
-      const bits = userData[username].bits ?? 0;
-      const bitTop = document.getElementById("bitCountTop");
-      if (bitTop) bitTop.innerText = bits;
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      updateNavLinks();
-      updateBitsDisplay();
-    });
-  </script>
-</body>
-</html>
+      const bits = userData[username].bits ?? 0
