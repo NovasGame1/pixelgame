@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <title>PixelGame - Profile</title>
 
-  <!-- Logo for browser tab -->
+  <!-- Logo for tab -->
   <link rel="icon" href="assets/images/logo.png" type="image/png">
   <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
 
   <link rel="stylesheet" href="style.css">
+  <!-- Achievements helper -->
+  <script src="assets/js/achievements.js"></script>
 </head>
 <body>
   <!-- Bits HUD -->
@@ -34,6 +36,12 @@
     <main>
       <h2>Your Profile</h2>
       <div id="profileContent">Loading profile...</div>
+
+      <!-- ACHIEVEMENTS SECTION -->
+      <div class="section-box">
+        <h2>Your Achievements</h2>
+        <div id="achievementsList" class="achievements-grid">Loading achievements...</div>
+      </div>
     </main>
 
     <footer>
@@ -62,14 +70,17 @@
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const username = localStorage.getItem("profileUsername");
       if (!username || !userData[username]) return;
-      const bits = userData[username].bits ?? 0;
-      document.getElementById("bitCountTop").innerText = bits;
+      document.getElementById("bitCountTop").innerText = userData[username].bits ?? 0;
+    }
+
+    function getQueryParam(key) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(key);
     }
 
     function renderProfile() {
-      const username = localStorage.getItem('profileUsername');
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
-
+      const username = localStorage.getItem('profileUsername');
       if (!username || !userData[username]) {
         window.location.href = 'login.html';
         return;
@@ -78,6 +89,8 @@
       const user = userData[username];
       const bio = user.bio || "This user hasn't written a bio yet.";
       const joinDate = user.joinDate || "Unknown";
+      const bits = user.bits ?? 0;
+      const friends = (user.friends || []).length;
 
       document.getElementById("profileContent").innerHTML = `
         <div class="profile-top">
@@ -86,14 +99,14 @@
             <div class="username">${username}</div>
             <div class="join-date">Joined: ${joinDate}</div>
             <div class="stat-grid">
-              <div class="stat"><div class="stat-number">${user.bits ?? 0}</div><div>Bits</div></div>
-              <div class="stat"><div class="stat-number">${(user.friends ?? []).length}</div><div>Friends</div></div>
+              <div class="stat"><div class="stat-number">${bits}</div><div>Bits</div></div>
+              <div class="stat"><div class="stat-number">${friends}</div><div>Friends</div></div>
             </div>
           </div>
         </div>
-        <div class="section-box" style="margin-top: 30px;">
+        <div class="section-box" style="margin-top:30px;">
           <h2>About Me</h2>
-          <textarea id="bioField" style="width: 100%; height: 100px;">${bio}</textarea>
+          <textarea id="bioField" style="width:100%;height:100px;">${bio}</textarea>
           <br>
           <button onclick="saveBio()">Save Bio</button>
         </div>
@@ -104,7 +117,6 @@
       const username = localStorage.getItem('profileUsername');
       const newBio = document.getElementById("bioField").value;
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
-
       if (username && userData[username]) {
         userData[username].bio = newBio;
         localStorage.setItem("userData", JSON.stringify(userData));
@@ -116,6 +128,10 @@
       updateNavLinks();
       updateBitsDisplay();
       renderProfile();
+
+      // **Achievements integration**
+      checkBaseAchievements();
+      renderAchievements();
     });
   </script>
 </body>
