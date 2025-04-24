@@ -2,57 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PixelGame - Admin Panel</title>
+  <title>PixelGame – Admin Panel</title>
 
+  <!-- Logo -->
   <link rel="icon" href="assets/images/logo.png" type="image/png">
   <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
   <link rel="stylesheet" href="style.css">
 
   <style>
-    input, button {
-      margin: 4px 0;
-      padding: 6px;
-      font-size: 14px;
-    }
-
-    .user-card {
-      background: #fff;
-      border: 1px solid #aaa;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-
-    .admin-controls {
-      margin-top: 10px;
-      display: grid;
-      gap: 6px;
-    }
-
-    .admin-controls div {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .admin-controls label {
-      width: 120px;
-      font-weight: bold;
-    }
-
-    .flags {
-      font-size: 0.9em;
-      color: #666;
-      margin-top: 5px;
-    }
+    body { background: #f2f2f2; }
+    input, button, select { margin:4px 0; padding:6px; font-size:14px; }
+    .section-box { background:#fff; border:1px solid #aaa; padding:15px; margin-bottom:20px; }
+    .user-card { border:1px solid #ccc; background:#fff; padding:15px; margin-bottom:15px; }
+    .admin-controls { display:grid; gap:6px; margin-top:10px; }
+    .admin-controls div { display:flex; gap:10px; align-items:center; }
+    .admin-controls label { width:120px; font-weight:bold; }
+    .flags { font-size:0.9em; color:#666; margin-top:5px; }
+    #auditLog { background:#fff; border:1px solid #aaa; padding:15px; max-height:200px; overflow-y:auto; }
   </style>
 </head>
 <body>
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
-
   <div class="page-wrapper">
     <header>
       <a href="index.html" class="site-logo-link">
-        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
+        <img src="assets/images/logo.png" class="site-logo" alt="PixelGame">
       </a>
       <nav>
         <a href="index.html">Home</a>
@@ -60,195 +34,231 @@
         <a href="profile.html">Profile</a>
         <a href="people.html">People</a>
         <a href="shop.html">Shop</a>
-        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
+        <a href="admin.html" id="adminBtn" style="display:none;">Admin Panel</a>
         <a href="login.html" id="loginLink">Login</a>
-        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+        <a href="#" id="logoutLink" style="display:none;" onclick="logout()">Logout</a>
       </nav>
     </header>
 
     <main>
-      <h2>Admin Panel - Owner Control</h2>
-      <input type="text" id="searchBar" placeholder="Search users..." oninput="renderUserList()" style="width: 100%; padding: 10px; margin: 15px 0;">
-      <div id="adminUsers">Loading users...</div>
+      <h2>Admin Panel – Owner Control</h2>
+
+      <!-- Broadcast to All -->
+      <div class="section-box">
+        <h3>Broadcast Message</h3>
+        <input type="text" id="broadcastInput" placeholder="Your broadcast…">
+        <button onclick="broadcastAll()">Send to All</button>
+      </div>
+
+      <!-- Targeted Alert -->
+      <div class="section-box">
+        <h3>Targeted Alert</h3>
+        <select id="alertUserSelect"></select>
+        <input type="text" id="alertInput" placeholder="Alert message…">
+        <button onclick="sendAlert()">Send Alert</button>
+      </div>
+
+      <!-- User Management -->
+      <input type="text" id="searchBar" placeholder="Search users…" style="width:100%;padding:10px;margin:15px 0;" oninput="renderUserList()">
+      <div id="adminUsers">Loading users…</div>
+
+      <!-- Audit Log -->
+      <div class="section-box">
+        <h3>Audit Log</h3>
+        <div id="auditLog">Loading logs…</div>
+      </div>
     </main>
 
     <footer>© 2025 PixelGame.</footer>
+  </div>
 
   <script>
-    const currentAdmin = "Nova";
-
+    const OWNER = "Nova";
+    // Helpers
     function logout() {
       localStorage.removeItem("profileUsername");
       localStorage.removeItem("profileBio");
       updateNavLinks();
       window.location.href = "login.html";
     }
-
     function updateNavLinks() {
-      const username = localStorage.getItem("profileUsername");
-      const isAdmin = username === currentAdmin;
-      document.getElementById("loginLink").style.display = username ? "none" : "inline";
-      document.getElementById("logoutLink").style.display = username ? "inline" : "none";
-      const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
+      const me = localStorage.getItem("profileUsername");
+      document.getElementById("loginLink").style.display = me ? "none" : "inline";
+      document.getElementById("logoutLink").style.display = me ? "inline" : "none";
+      document.getElementById("adminBtn").style.display = (me === OWNER) ? "inline" : "none";
     }
-
     function updateBitsDisplay() {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const username = localStorage.getItem("profileUsername");
-      if (!username || !userData[username]) return;
-      const bits = userData[username].bits ?? 0;
-      document.getElementById("bitCountTop").innerText = bits;
+      const ud = JSON.parse(localStorage.getItem("userData"))||{};
+      const me = localStorage.getItem("profileUsername");
+      if(ud[me]) document.getElementById("bitCountTop").innerText = ud[me].bits||0;
     }
-
-    function togglePassword(username) {
-      const input = document.getElementById(`newPass-${username}`);
-      input.type = input.type === "password" ? "text" : "password";
+    function logAction(action, target, details="") {
+      const logs = JSON.parse(localStorage.getItem("adminAuditLog"))||[];
+      logs.unshift({ time: new Date().toLocaleString(), admin: OWNER, action, target, details });
+      localStorage.setItem("adminAuditLog", JSON.stringify(logs));
+      renderAuditLog();
     }
-
-    function toggleAdmin(username) {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      userData[username].isAdmin = !userData[username].isAdmin;
-      localStorage.setItem("userData", JSON.stringify(userData));
+    function renderAuditLog(){
+      const logs = JSON.parse(localStorage.getItem("adminAuditLog"))||[];
+      const c = document.getElementById("auditLog");
+      c.innerHTML = logs.slice(0,20).map(l=>`[${l.time}] ${l.admin} ${l.action} ${l.target} ${l.details}`).join("<br>");
+    }
+    // Broadcast
+    function broadcastAll(){
+      const msg = document.getElementById("broadcastInput").value.trim();
+      if(!msg) return alert("Type a message.");
+      localStorage.setItem("broadcastMessage", msg);
+      logAction("Broadcasted","ALL", msg);
+      alert("Broadcast queued.");
+    }
+    // Targeted alerts
+    function sendAlert(){
+      const user = document.getElementById("alertUserSelect").value;
+      const msg  = document.getElementById("alertInput").value.trim();
+      if(!user||!msg) return alert("Select user & message.");
+      const alerts = JSON.parse(localStorage.getItem("userAlerts"))||{};
+      alerts[user] = alerts[user]||[];
+      alerts[user].push({by:OWNER, time:new Date().toLocaleString(), msg});
+      localStorage.setItem("userAlerts", JSON.stringify(alerts));
+      logAction("Alerted",user,msg);
+      alert("Alert sent.");
+    }
+    // User utils
+    function togglePassword(username){
+      const f = document.getElementById(`newPass-${username}`);
+      f.type = f.type==="password"?"text":"password";
+    }
+    function toggleAdmin(username){
+      const ud = JSON.parse(localStorage.getItem("userData"))||{};
+      ud[username].isAdmin = !ud[username].isAdmin;
+      localStorage.setItem("userData", JSON.stringify(ud));
+      logAction( ud[username].isAdmin?"Promoted":"Demoted", username );
       renderUserList();
     }
-
-    function toggleBan(username) {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const user = userData[username];
-      if (!user) return;
-
-      if (!user.isBanned) {
-        const reason = prompt(`Enter ban reason for "${username}":`) || "No reason provided.";
-        const duration = prompt("How many minutes to ban for? Leave empty for permanent:");
-        let expiresAt = null;
-
-        if (duration && !isNaN(duration)) {
-          const minutes = parseInt(duration);
-          expiresAt = Date.now() + minutes * 60000;
-        }
-
-        user.isBanned = true;
-        user.banReason = reason;
-        user.banExpires = expiresAt;
-
-        alert(`${username} has been banned ${expiresAt ? `for ${duration} minutes` : "permanently"}.`);
+    // Lock (disable login without ban)
+    function toggleLock(username){
+      const ud = JSON.parse(localStorage.getItem("userData"))||{};
+      const u = ud[username];
+      if(!u.isLocked){
+        const reason = prompt(`Reason to lock ${username}:`)||"No reason";
+        let dur = prompt("Minutes to lock (blank=perm):");
+        let exp=null; if(dur&&!isNaN(dur)) exp=Date.now()+parseInt(dur)*60000;
+        u.isLocked=true; u.lockReason=reason; u.lockExpires=exp;
+        alert(`${username} locked.`);
+        logAction("Locked",username,reason+ (exp?` until ${new Date(exp).toLocaleString()}`:""));
       } else {
-        user.isBanned = false;
-        delete user.banReason;
-        delete user.banExpires;
-        alert(`${username} has been unbanned.`);
+        u.isLocked=false; delete u.lockReason; delete u.lockExpires;
+        alert(`${username} unlocked.`);
+        logAction("Unlocked",username);
       }
-
-      localStorage.setItem("userData", JSON.stringify(userData));
+      localStorage.setItem("userData", JSON.stringify(ud));
+      renderUserList();
+    }
+    // Ban (with reason & temp)
+    function toggleBan(username){
+      const ud = JSON.parse(localStorage.getItem("userData"))||{};
+      const u = ud[username];
+      if(!u.isBanned){
+        const reason = prompt(`Ban reason for ${username}:`)||"No reason";
+        let dur = prompt("Minutes to ban (blank=perm):");
+        let exp=null; if(dur&&!isNaN(dur)) exp=Date.now()+parseInt(dur)*60000;
+        u.isBanned=true; u.banReason=reason; u.banExpires=exp;
+        alert(`${username} banned.`);
+        logAction("Banned",username,reason+ (exp?` until ${new Date(exp).toLocaleString()}`:""));
+      } else {
+        u.isBanned=false; delete u.banReason; delete u.banExpires;
+        alert(`${username} unbanned.`);
+        logAction("Unbanned",username);
+      }
+      localStorage.setItem("userData", JSON.stringify(ud));
+      renderUserList();
+    }
+    // Reset stats
+    function resetStats(username){
+      if(!confirm(`Reset all stats for ${username}?`)) return;
+      const ud = JSON.parse(localStorage.getItem("userData"))||{};
+      const u = ud[username];
+      u.bits=0; u.bio=""; u.friends=[]; u.shirtsEquipped=null; u.pantsEquipped=null;
+      localStorage.setItem("userData", JSON.stringify(ud));
+      logAction("ResetStats",username);
+      renderUserList();
+    }
+    // Delete user
+    function deleteUser(username){
+      if(!confirm(`Delete ${username}?`)) return;
+      const ud = JSON.parse(localStorage.getItem("userData"))||{};
+      delete ud[username];
+      for(const x in ud) ud[x].friends=(ud[x].friends||[]).filter(f=>f!==username);
+      localStorage.setItem("userData", JSON.stringify(ud));
+      logAction("Deleted",username);
       renderUserList();
     }
 
-    function applyChanges(oldUsername) {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const newName = document.getElementById(`newName-${oldUsername}`).value.trim();
-      const newBio = document.getElementById(`newBio-${oldUsername}`).value;
-      const newBits = parseInt(document.getElementById(`newBits-${oldUsername}`).value) || 0;
-      const newPass = document.getElementById(`newPass-${oldUsername}`).value;
+    function renderUserList(){
+      const ud = JSON.parse(localStorage.getItem("userData"))||{};
+      const s = document.getElementById("searchBar").value.toLowerCase();
+      const ct = document.getElementById("adminUsers");
+      ct.innerHTML=""; document.getElementById("alertUserSelect").innerHTML="<option value=''>Select…</option>";
 
-      if (newName !== oldUsername && userData[newName]) {
-        alert("Username already exists.");
-        return;
-      }
+      const now=Date.now();
+      for(const username in ud){
+        if(!username.toLowerCase().includes(s)) continue;
+        const u=ud[username];
+        // auto-unlock/ban expiration
+        if(u.isLocked && u.lockExpires&& now>u.lockExpires) { u.isLocked=false; delete u.lockReason; delete u.lockExpires;}
+        if(u.isBanned&& u.banExpires&& now>u.banExpires) { u.isBanned=false; delete u.banReason; delete u.banExpires;}
 
-      const user = userData[oldUsername];
-      delete userData[oldUsername];
-      user.username = newName;
-      user.bio = newBio;
-      user.bits = newBits;
-      user.password = newPass;
-      userData[newName] = user;
+        // add to alert dropdown
+        const opt=document.createElement("option");
+        opt.value=username; opt.innerText=username;
+        document.getElementById("alertUserSelect").appendChild(opt);
 
-      for (const u in userData) {
-        const friends = userData[u].friends || [];
-        const index = friends.indexOf(oldUsername);
-        if (index !== -1) {
-          friends.splice(index, 1, newName);
-          userData[u].friends = friends;
-        }
-      }
+        let flags=[];
+        flags.push(u.isAdmin?"Admin":"User");
+        flags.push(u.isLocked?"Locked":"Unlocked");
+        if(u.isLocked&&u.lockExpires) flags.push(`🔒 ${(u.lockExpires-now)/60000|0}m left`);
+        flags.push(u.isBanned?"Banned":"Active");
+        if(u.isBanned&&u.banExpires) flags.push(`⏱ ${(u.banExpires-now)/60000|0}m left`);
 
-      localStorage.setItem("userData", JSON.stringify(userData));
-      renderUserList();
-    }
-
-    function deleteUser(username) {
-      if (!confirm(`Delete "${username}"? This cannot be undone.`)) return;
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      delete userData[username];
-      for (const u in userData) {
-        userData[u].friends = (userData[u].friends || []).filter(f => f !== username);
-      }
-      localStorage.setItem("userData", JSON.stringify(userData));
-      renderUserList();
-    }
-
-    function renderUserList() {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const search = document.getElementById("searchBar").value.toLowerCase();
-      const container = document.getElementById("adminUsers");
-      container.innerHTML = "";
-
-      const now = Date.now();
-
-      for (const username in userData) {
-        const user = userData[username];
-
-        // Auto-unban expired temp bans
-        if (user.isBanned && user.banExpires && now > user.banExpires) {
-          user.isBanned = false;
-          delete user.banReason;
-          delete user.banExpires;
-        }
-
-        if (!username.toLowerCase().includes(search)) continue;
-
-        const flags = [
-          user.isAdmin ? "Admin" : "User",
-          user.isBanned ? "Banned" : "Active",
-          user.banExpires ? `⏱ until ${new Date(user.banExpires).toLocaleTimeString()}` : ""
-        ].filter(Boolean).join(" | ");
-
-        container.innerHTML += `
+        ct.innerHTML+=`
           <div class="user-card">
             <strong>${username}</strong>
-            <div class="flags">${flags}</div>
-            ${user.isBanned ? `<div style="color: red;"><b>Reason:</b> ${user.banReason || "None"}</div>` : ""}
+            <div class="flags">${flags.join(" | ")}</div>
+            ${u.isBanned?`<div style="color:red"><b>Reason:</b>${u.banReason}</div>`:""}
+            ${u.isLocked?`<div style="color:orange"><b>Lock:</b>${u.lockReason}</div>`:""}
             <div class="admin-controls">
               <div><label>Username:</label><input type="text" id="newName-${username}" value="${username}"></div>
-              <div><label>Bio:</label><input type="text" id="newBio-${username}" value="${user.bio || ""}"></div>
-              <div><label>Bits:</label><input type="number" id="newBits-${username}" value="${user.bits ?? 0}"></div>
+              <div><label>Bio:</label><input type="text" id="newBio-${username}" value="${u.bio||""}"></div>
+              <div><label>Bits:</label><input type="number" id="newBits-${username}" value="${u.bits||0}"></div>
               <div>
                 <label>Password:</label>
-                <input type="password" id="newPass-${username}" value="${user.password || ""}">
+                <input type="password" id="newPass-${username}" value="${u.password||""}">
                 <button onclick="togglePassword('${username}')">👁️</button>
               </div>
               <div>
-                <button onclick="toggleAdmin('${username}')">${user.isAdmin ? "Demote" : "Promote"} Admin</button>
-                <button onclick="toggleBan('${username}')">${user.isBanned ? "Unban" : "Ban"} User</button>
-                <button onclick="applyChanges('${username}')">✅ Save</button>
-                <button onclick="deleteUser('${username}')">🗑️ Delete</button>
+                <button onclick="toggleAdmin('${username}')">${u.isAdmin?"Demote":"Promote"} Admin</button>
+                <button onclick="toggleLock('${username}')">${u.isLocked?"Unlock":"Lock"} Account</button>
+                <button onclick="toggleBan('${username}')">${u.isBanned?"Unban":"Ban"} User</button>
+                <button onclick="resetStats('${username}')">Reset Stats</button>
+                <button onclick="applyChanges('${username}')">Save</button>
+                <button onclick="deleteUser('${username}')">Delete</button>
               </div>
             </div>
-          </div>
-        `;
+          </div>`;
       }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const username = localStorage.getItem("profileUsername");
-      if (username !== currentAdmin) {
-        document.body.innerHTML = "<div style='padding: 30px;'><h2>Access Denied</h2><p>This page is for the Owner (Nova) only.</p></div>";
+    // On load
+    document.addEventListener("DOMContentLoaded",()=>{
+      const me=localStorage.getItem("profileUsername");
+      if(me!==OWNER){
+        document.body.innerHTML="<div style='padding:30px;'><h2>Access Denied</h2><p>Owner only.</p></div>";
         return;
       }
       updateNavLinks();
       updateBitsDisplay();
       renderUserList();
+      renderAuditLog();
     });
   </script>
 </body>
