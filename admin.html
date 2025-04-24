@@ -67,13 +67,12 @@
     </header>
 
     <main>
-      <h2>Admin Panel - Master Control</h2>
+      <h2>Admin Panel - Owner Control</h2>
       <input type="text" id="searchBar" placeholder="Search users..." oninput="renderUserList()" style="width: 100%; padding: 10px; margin: 15px 0;">
       <div id="adminUsers">Loading users...</div>
     </main>
 
     <footer>© 2025 PixelGame.</footer>
-  </div>
 
   <script>
     const currentAdmin = "Nova";
@@ -90,63 +89,25 @@
       const isAdmin = username === currentAdmin;
       document.getElementById("loginLink").style.display = username ? "none" : "inline";
       document.getElementById("logoutLink").style.display = username ? "inline" : "none";
-      document.getElementById("adminBtn").style.display = isAdmin ? "inline" : "none";
+      const adminBtn = document.getElementById("adminBtn");
+      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
     }
 
     function updateBitsDisplay() {
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const username = localStorage.getItem("profileUsername");
       if (!username || !userData[username]) return;
-      document.getElementById("bitCountTop").innerText = userData[username].bits ?? 0;
-    }
-
-    function renderUserList() {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const search = document.getElementById("searchBar").value.toLowerCase();
-      const container = document.getElementById("adminUsers");
-      container.innerHTML = "";
-
-      for (const username in userData) {
-        if (!username.toLowerCase().includes(search)) continue;
-        const user = userData[username];
-
-        const flags = [
-          user.isAdmin ? "Admin" : "User",
-          user.isBanned ? "Banned" : "Active"
-        ].join(" | ");
-
-        container.innerHTML += `
-          <div class="user-card">
-            <strong>${username}</strong>
-            <div class="flags">[${flags}]</div>
-            <div class="admin-controls">
-              <div><label>Username:</label><input type="text" id="newName-${username}" value="${username}"></div>
-              <div><label>Bio:</label><input type="text" id="newBio-${username}" value="${user.bio || ""}"></div>
-              <div><label>Bits:</label><input type="number" id="newBits-${username}" value="${user.bits ?? 0}"></div>
-              <div><label>Password:</label>
-                <input type="password" id="newPass-${username}" value="${user.password || ""}">
-                <button type="button" onclick="togglePassword('${username}')">👁️</button>
-              </div>
-              <div>
-                <button onclick="toggleAdmin('${username}')">${user.isAdmin ? 'Demote' : 'Promote'} Admin</button>
-                <button onclick="toggleBan('${username}')">${user.isBanned ? 'Unban' : 'Ban'} User</button>
-                <button onclick="applyChanges('${username}')">✅ Save</button>
-                <button onclick="deleteUser('${username}')">🗑️ Delete</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }
+      const bits = userData[username].bits ?? 0;
+      document.getElementById("bitCountTop").innerText = bits;
     }
 
     function togglePassword(username) {
-      const field = document.getElementById(`newPass-${username}`);
-      field.type = field.type === "password" ? "text" : "password";
+      const input = document.getElementById(`newPass-${username}`);
+      input.type = input.type === "password" ? "text" : "password";
     }
 
     function toggleAdmin(username) {
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      if (!userData[username]) return;
       userData[username].isAdmin = !userData[username].isAdmin;
       localStorage.setItem("userData", JSON.stringify(userData));
       renderUserList();
@@ -154,8 +115,31 @@
 
     function toggleBan(username) {
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      if (!userData[username]) return;
-      userData[username].isBanned = !userData[username].isBanned;
+      const user = userData[username];
+      if (!user) return;
+
+      if (!user.isBanned) {
+        const reason = prompt(`Enter ban reason for "${username}":`) || "No reason provided.";
+        const duration = prompt("How many minutes to ban for? Leave empty for permanent:");
+        let expiresAt = null;
+
+        if (duration && !isNaN(duration)) {
+          const minutes = parseInt(duration);
+          expiresAt = Date.now() + minutes * 60000;
+        }
+
+        user.isBanned = true;
+        user.banReason = reason;
+        user.banExpires = expiresAt;
+
+        alert(`${username} has been banned ${expiresAt ? `for ${duration} minutes` : "permanently"}.`);
+      } else {
+        user.isBanned = false;
+        delete user.banReason;
+        delete user.banExpires;
+        alert(`${username} has been unbanned.`);
+      }
+
       localStorage.setItem("userData", JSON.stringify(userData));
       renderUserList();
     }
@@ -168,7 +152,7 @@
       const newPass = document.getElementById(`newPass-${oldUsername}`).value;
 
       if (newName !== oldUsername && userData[newName]) {
-        alert("Username already taken!");
+        alert("Username already exists.");
         return;
       }
 
@@ -180,7 +164,6 @@
       user.password = newPass;
       userData[newName] = user;
 
-      // Update friends lists
       for (const u in userData) {
         const friends = userData[u].friends || [];
         const index = friends.indexOf(oldUsername);
@@ -195,23 +178,72 @@
     }
 
     function deleteUser(username) {
-      if (!confirm(`Are you sure you want to delete "${username}"?`)) return;
-
+      if (!confirm(`Delete "${username}"? This cannot be undone.`)) return;
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       delete userData[username];
-
       for (const u in userData) {
         userData[u].friends = (userData[u].friends || []).filter(f => f !== username);
       }
-
       localStorage.setItem("userData", JSON.stringify(userData));
       renderUserList();
+    }
+
+    function renderUserList() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const search = document.getElementById("searchBar").value.toLowerCase();
+      const container = document.getElementById("adminUsers");
+      container.innerHTML = "";
+
+      const now = Date.now();
+
+      for (const username in userData) {
+        const user = userData[username];
+
+        // Auto-unban expired temp bans
+        if (user.isBanned && user.banExpires && now > user.banExpires) {
+          user.isBanned = false;
+          delete user.banReason;
+          delete user.banExpires;
+        }
+
+        if (!username.toLowerCase().includes(search)) continue;
+
+        const flags = [
+          user.isAdmin ? "Admin" : "User",
+          user.isBanned ? "Banned" : "Active",
+          user.banExpires ? `⏱ until ${new Date(user.banExpires).toLocaleTimeString()}` : ""
+        ].filter(Boolean).join(" | ");
+
+        container.innerHTML += `
+          <div class="user-card">
+            <strong>${username}</strong>
+            <div class="flags">${flags}</div>
+            ${user.isBanned ? `<div style="color: red;"><b>Reason:</b> ${user.banReason || "None"}</div>` : ""}
+            <div class="admin-controls">
+              <div><label>Username:</label><input type="text" id="newName-${username}" value="${username}"></div>
+              <div><label>Bio:</label><input type="text" id="newBio-${username}" value="${user.bio || ""}"></div>
+              <div><label>Bits:</label><input type="number" id="newBits-${username}" value="${user.bits ?? 0}"></div>
+              <div>
+                <label>Password:</label>
+                <input type="password" id="newPass-${username}" value="${user.password || ""}">
+                <button onclick="togglePassword('${username}')">👁️</button>
+              </div>
+              <div>
+                <button onclick="toggleAdmin('${username}')">${user.isAdmin ? "Demote" : "Promote"} Admin</button>
+                <button onclick="toggleBan('${username}')">${user.isBanned ? "Unban" : "Ban"} User</button>
+                <button onclick="applyChanges('${username}')">✅ Save</button>
+                <button onclick="deleteUser('${username}')">🗑️ Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       const username = localStorage.getItem("profileUsername");
       if (username !== currentAdmin) {
-        document.body.innerHTML = "<div style='padding:30px;'><h2>Access Denied</h2><p>This page is for Nova only.</p></div>";
+        document.body.innerHTML = "<div style='padding: 30px;'><h2>Access Denied</h2><p>This page is for the Owner (Nova) only.</p></div>";
         return;
       }
       updateNavLinks();
