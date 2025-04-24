@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <title>PixelGame - Profile</title>
 
-  <!-- FAVICON (relative path so it works locally too) -->
-  <link rel="icon" href="assets/images/logo.png" type="image/png">
-  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
+  <!-- FAVICON (local logo for browser tab) -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -15,11 +15,10 @@
 
   <div class="page-wrapper">
     <header>
-      <!-- Site Logo in header -->
+      <!-- Logo in header -->
       <a href="index.html" class="site-logo-link">
         <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
       </a>
-
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
@@ -34,7 +33,6 @@
 
     <main>
       <!-- Profile content goes here -->
-      <div id="profileContent">Loading profile...</div>
     </main>
 
     <footer>
@@ -53,10 +51,10 @@
     function updateNavLinks() {
       const username = localStorage.getItem('profileUsername');
       const isAdmin = username === "Nova";
-      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+      document.getElementById('loginLink').style.display  = username ? 'none' : 'inline';
       document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
       const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
     }
 
     function updateBitsDisplay() {
