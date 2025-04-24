@@ -3,17 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>PixelGame - View Profile</title>
+
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
+
   <div class="page-wrapper">
     <header>
-      <h1>Player Profile</h1>
+      <a href="index.html" class="site-logo-link">
+        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
+      </a>
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
-        <a href="profile.html">Your Profile</a>
+        <a href="profile.html">Profile</a>
         <a href="people.html">People</a>
+        <a href="shop.html">Shop</a>
         <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
         <a href="login.html" id="loginLink">Login</a>
         <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
@@ -21,20 +29,8 @@
     </header>
 
     <main>
-      <div class="section-box profile-top">
-        <img src="https://via.placeholder.com/150x150?text=Avatar" alt="Avatar" class="avatar">
-        <div class="profile-info">
-          <h2 class="username" id="profileUsername">Loading...</h2>
-          <p class="join-date">(Public Profile)</p>
-        </div>
-      </div>
-
-      <div class="section-box">
-        <h2>About Me</h2>
-        <p id="profileBio">Loading bio...</p>
-      </div>
-
-      <div class="section-box" id="friendRequestBox" style="text-align: center;"></div>
+      <h2>User Profile</h2>
+      <div id="profileContent">Loading profile...</div>
     </main>
 
     <footer>
@@ -55,74 +51,62 @@
       const isAdmin = username === "Nova";
       document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
       document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
-      const adminBtn = document.getElementById('adminBtn');
+      const adminBtn = document.getElementById("adminBtn");
       if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
 
-    function sendFriendRequest() {
-      const currentUser = localStorage.getItem('profileUsername');
-      const targetUser = localStorage.getItem('viewingUser');
-
-      if (!currentUser || currentUser === targetUser) {
-        alert("You cannot friend yourself or you're not logged in.");
-        return;
-      }
-
-      const allRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
-      if (!allRequests[targetUser]) allRequests[targetUser] = [];
-
-      if (allRequests[targetUser].includes(currentUser)) {
-        alert("You've already sent a friend request.");
-        return;
-      }
-
-      allRequests[targetUser].push(currentUser);
-      localStorage.setItem('friendRequests', JSON.stringify(allRequests));
-
-      alert("Friend request sent to " + targetUser + "!");
-      renderFriendButton();
+    function updateBitsDisplay() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      if (!username || !userData[username]) return;
+      const bits = userData[username].bits ?? 0;
+      document.getElementById("bitCountTop").innerText = bits;
     }
 
-    function renderFriendButton() {
-      const currentUser = localStorage.getItem('profileUsername');
-      const targetUser = localStorage.getItem('viewingUser');
-      const box = document.getElementById("friendRequestBox");
+    function getQueryParam(key) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(key);
+    }
 
-      if (!currentUser || currentUser === targetUser) {
-        box.innerHTML = "";
+    function renderProfile() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const targetUser = getQueryParam("user");
+
+      if (!targetUser || !userData[targetUser]) {
+        document.getElementById("profileContent").innerHTML = "<p>User not found.</p>";
         return;
       }
 
-      const allRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
-      const alreadyRequested = (allRequests[targetUser] || []).includes(currentUser);
+      const user = userData[targetUser];
+      const bio = user.bio || "This user hasn't written a bio yet.";
+      const joinDate = user.joinDate || "Unknown";
+      const bits = user.bits ?? 0;
+      const friends = user.friends?.length ?? 0;
 
-      const allFriends = JSON.parse(localStorage.getItem('friends')) || {};
-      const isAlreadyFriends = (allFriends[currentUser] || []).includes(targetUser);
+      document.getElementById("profileContent").innerHTML = `
+        <div class="profile-top">
+          <img src="assets/images/default-avatar.png" alt="Avatar" class="avatar">
+          <div class="profile-info">
+            <div class="username">${targetUser}</div>
+            <div class="join-date">Joined: ${joinDate}</div>
+            <div class="stat-grid">
+              <div class="stat"><div class="stat-number">${bits}</div><div>Bits</div></div>
+              <div class="stat"><div class="stat-number">${friends}</div><div>Friends</div></div>
+            </div>
+          </div>
+        </div>
 
-      if (isAlreadyFriends) {
-        box.innerHTML = "<em>You are already friends!</em>";
-      } else if (alreadyRequested) {
-        box.innerHTML = "<em>Friend request sent!</em>";
-      } else {
-        box.innerHTML = `<button onclick="sendFriendRequest()">Send Friend Request</button>`;
-      }
+        <div class="section-box" style="margin-top: 30px;">
+          <h2>About</h2>
+          <p>${bio}</p>
+        </div>
+      `;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       updateNavLinks();
-
-      const username = localStorage.getItem("viewingUser");
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-
-      if (!username || !userData[username]) {
-        document.getElementById("profileUsername").innerText = "User Not Found";
-        document.getElementById("profileBio").innerText = "This user may not exist.";
-        document.getElementById("friendRequestBox").innerHTML = "";
-      } else {
-        document.getElementById("profileUsername").innerText = username;
-        document.getElementById("profileBio").innerText = userData[username].bio || "No bio available.";
-        renderFriendButton();
-      }
+      updateBitsDisplay();
+      renderProfile();
     });
   </script>
 </body>
