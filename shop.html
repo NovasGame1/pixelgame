@@ -3,139 +3,193 @@
 <head>
   <meta charset="UTF-8">
   <title>PixelGame - Shop</title>
+
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
   <link rel="stylesheet" href="style.css">
+
   <style>
-    #bitsDisplay {
-      position: fixed;
-      top: 10px;
-      right: 20px;
-      background: #fff;
-      border: 2px solid #444;
-      border-radius: 10px;
-      padding: 6px 12px;
-      font-weight: bold;
-      z-index: 1000;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    .shop-tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
     }
+
     .shop-tabs button {
-      margin-right: 10px;
-      padding: 6px 12px;
+      padding: 10px 20px;
       font-weight: bold;
+      cursor: pointer;
+      border: 2px solid #c42b1c;
+      background: #fff;
+      color: #c42b1c;
+      margin: 0 10px;
     }
-    .shop-section {
-      display: none;
+
+    .shop-tabs button.active {
+      background: #c42b1c;
+      color: #fff;
     }
-    .shop-section.active {
-      display: block;
+
+    .item-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
     }
-    .shop-item {
-      border: 2px solid #ccc;
-      padding: 10px;
+
+    .item-card {
+      border: 1px solid #aaa;
+      background: #fff;
+      padding: 15px;
+      width: 200px;
+      text-align: center;
+    }
+
+    .item-card img {
+      width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
       margin-bottom: 10px;
-      background: #f9f9f9;
+    }
+
+    .item-card button {
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <!-- Bits HUD -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
 
   <div class="page-wrapper">
-<header>
-  <h1>PixelGame Shop</h1>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="games.html">Games</a>
-    <a href="profile.html">Profile</a>
-    <a href="people.html">People</a>
-    <a href="shop.html">Shop</a>
-    <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
-    <a href="login.html" id="loginLink">Login</a>
-    <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
-  </nav>
-</header>
-
+    <header>
+      <a href="index.html" class="site-logo-link">
+        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
+      </a>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Profile</a>
+        <a href="people.html">People</a>
+        <a href="shop.html">Shop</a>
+        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+      </nav>
     </header>
 
     <main>
+      <h2>Shop</h2>
       <div class="shop-tabs">
-        <button onclick="switchTab('shirts')">Shirts</button>
+        <button class="active" onclick="switchTab('shirts')">Shirts</button>
         <button onclick="switchTab('pants')">Pants</button>
       </div>
-
-      <div id="shirts" class="shop-section active">
-        <div class="shop-item">
-          <strong>Red Shirt</strong><br>
-          Price: 10 Bits<br>
-          <button onclick="buyItem('shirt', 'Red Shirt', 10)">Buy</button>
-        </div>
-        <div class="shop-item">
-          <strong>Blue Shirt</strong><br>
-          Price: 15 Bits<br>
-          <button onclick="buyItem('shirt', 'Blue Shirt', 15)">Buy</button>
-        </div>
-      </div>
-
-      <div id="pants" class="shop-section">
-        <div class="shop-item">
-          <strong>Black Pants</strong><br>
-          Price: 12 Bits<br>
-          <button onclick="buyItem('pants', 'Black Pants', 12)">Buy</button>
-        </div>
-        <div class="shop-item">
-          <strong>Green Pants</strong><br>
-          Price: 8 Bits<br>
-          <button onclick="buyItem('pants', 'Green Pants', 8)">Buy</button>
-        </div>
-      </div>
+      <div id="shopItems" class="item-grid"></div>
     </main>
 
-    <footer>
-      © 2025 PixelGame.
-    </footer>
+    <footer>© 2025 PixelGame.</footer>
   </div>
 
-<script>
-  function getUser() {
-    const username = localStorage.getItem("profileUsername");
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    return { username, data: userData[username] || {} };
-  }
+  <script>
+    const items = {
+      shirts: [
+        { name: "Red Hoodie", price: 50, img: "assets/images/shirt1.png" },
+        { name: "Pixel Tee", price: 30, img: "assets/images/shirt2.png" }
+      ],
+      pants: [
+        { name: "Blue Jeans", price: 40, img: "assets/images/pants1.png" },
+        { name: "Black Pants", price: 35, img: "assets/images/pants2.png" }
+      ]
+    };
 
-  function updateNavLinks() {
-    const { username } = getUser();
-    const isLoggedIn = !!username;
-    const isAdmin = username === "Nova";
+    let currentTab = "shirts";
 
-    document.getElementById('loginLink').style.display = isLoggedIn ? "none" : "inline";
-    document.getElementById('logoutLink').style.display = isLoggedIn ? "inline" : "none";
+    function logout() {
+      localStorage.removeItem("profileUsername");
+      localStorage.removeItem("profileBio");
+      updateNavLinks();
+      window.location.href = "login.html";
+    }
 
-    const adminBtn = document.getElementById("adminBtn");
-    if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
-  }
+    function updateNavLinks() {
+      const username = localStorage.getItem("profileUsername");
+      const isAdmin = username === "Nova";
+      document.getElementById("loginLink").style.display = username ? "none" : "inline";
+      document.getElementById("logoutLink").style.display = username ? "inline" : "none";
+      const adminBtn = document.getElementById("adminBtn");
+      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
+    }
 
-  function updateBitsDisplay() {
-    const { data } = getUser();
-    const bits = data.bits ?? 0;
-    const bitTop = document.getElementById("bitCountTop");
-    if (bitTop) bitTop.textContent = bits;
-  }
+    function updateBitsDisplay() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      if (!username || !userData[username]) return;
+      const bits = userData[username].bits ?? 0;
+      document.getElementById("bitCountTop").innerText = bits;
+    }
 
-  function logout() {
-    localStorage.removeItem("profileUsername");
-    localStorage.removeItem("profileBio");
-    updateNavLinks();
-    updateBitsDisplay();
-    window.location.href = "login.html";
-  }
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll(".shop-tabs button").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".shop-tabs button").forEach(btn => {
+        if (btn.innerText.toLowerCase() === tab) btn.classList.add("active");
+      });
+      renderItems();
+    }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    updateNavLinks();
-    updateBitsDisplay();
-  });
-</script>
+    function renderItems() {
+      const container = document.getElementById("shopItems");
+      container.innerHTML = "";
 
+      const username = localStorage.getItem("profileUsername");
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      if (!username || !userData[username]) return;
 
+      const ownedItem = userData[username][currentTab + "Equipped"];
 
+      items[currentTab].forEach(item => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+
+        card.innerHTML = `
+          <img src="${item.img}" alt="${item.name}">
+          <h3>${item.name}</h3>
+          <p>${item.price} Bits</p>
+          <button>${ownedItem === item.name ? "Equipped" : "Buy"}</button>
+        `;
+
+        const btn = card.querySelector("button");
+        if (ownedItem === item.name) {
+          btn.disabled = true;
+        } else {
+          btn.onclick = () => buyItem(item.name, item.price);
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    function buyItem(name, price) {
+      const username = localStorage.getItem("profileUsername");
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      if (!username || !userData[username]) return;
+
+      if ((userData[username].bits ?? 0) < price) {
+        alert("Not enough Bits!");
+        return;
+      }
+
+      userData[username].bits -= price;
+      userData[username][currentTab + "Equipped"] = name;
+      localStorage.setItem("userData", JSON.stringify(userData));
+      updateBitsDisplay();
+      renderItems();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateNavLinks();
+      updateBitsDisplay();
+      renderItems();
+    });
+  </script>
 </body>
 </html>
