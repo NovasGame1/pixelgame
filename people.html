@@ -3,21 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>PixelGame - People</title>
+
+  <!-- FAVICON -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+
   <link rel="stylesheet" href="style.css">
-  <style>
-    #bitsDisplay {
-      position: fixed;
-      top: 10px;
-      right: 20px;
-      background: #fff;
-      border: 2px solid #444;
-      border-radius: 10px;
-      padding: 6px 12px;
-      font-weight: bold;
-      z-index: 1000;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-    }
-  </style>
 </head>
 <body>
   <!-- Bits HUD -->
@@ -25,7 +16,11 @@
 
   <div class="page-wrapper">
     <header>
-      <h1>Find Players</h1>
+      <!-- Logo -->
+      <a href="index.html" class="site-logo-link">
+        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
+      </a>
+
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
@@ -40,8 +35,9 @@
 
     <main>
       <div class="section-box">
-        <input type="text" id="searchBox" placeholder="Search for a username..." oninput="filterUsers()">
-        <div id="userList" style="margin-top: 20px;"></div>
+        <h2>Find Other Players</h2>
+        <input type="text" id="searchInput" placeholder="Search usernames..." oninput="searchPeople()" />
+        <div id="searchResults" style="margin-top: 20px;"></div>
       </div>
     </main>
 
@@ -50,82 +46,58 @@
     </footer>
   </div>
 
-<script>
-  /* ---------- shared helpers ---------- */
-  function getUser () {
-    const username = localStorage.getItem("profileUsername");
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    return { username, data: userData[username] || {} };
-  }
-
-  function updateBitsDisplay () {
-    const { data } = getUser();
-    const bits = data.bits ?? 0;
-    const bitTop = document.getElementById("bitCountTop");
-    if (bitTop) bitTop.textContent = bits;
-  }
-
-  function updateNavLinks () {
-    const { username } = getUser();
-    const isLoggedIn = !!username;
-    const isAdmin    = username === "Nova";
-
-    const loginL  = document.getElementById("loginLink");
-    const logoutL = document.getElementById("logoutLink");
-    const adminB  = document.getElementById("adminBtn");
-
-    if (loginL)  loginL.style.display  = isLoggedIn ? "none"  : "inline";
-    if (logoutL) logoutL.style.display = isLoggedIn ? "inline": "none";
-    if (adminB)  adminB.style.display  = isAdmin     ? "inline": "none";
-  }
-
-  /* ---------- logout ---------- */
-  function logout () {
-    localStorage.removeItem("profileUsername");
-    localStorage.removeItem("profileBio");
-    updateNavLinks();
-    updateBitsDisplay();
-    window.location.href = "login.html";
-  }
-
-  /* ---------- people-page logic ---------- */
-  function filterUsers () {
-    const search = document.getElementById("searchBox").value.toLowerCase();
-    document.querySelectorAll("#userList > div").forEach(div => {
-      div.style.display = div.textContent.toLowerCase().includes(search) ? "block" : "none";
-    });
-  }
-
-  function viewProfile (username) {
-    localStorage.setItem("viewingUser", username);
-    window.location.href = "viewprofile.html";
-  }
-
-  /* ---------- populate user list on load ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
-    updateNavLinks();
-    updateBitsDisplay();
-
-    const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
-    const list  = document.getElementById("userList");
-
-    if (users.length === 0) {
-      list.innerHTML = "<p>No registered users found.</p>";
-      return;
+  <script>
+    function logout() {
+      localStorage.removeItem("profileUsername");
+      localStorage.removeItem("profileBio");
+      updateNavLinks();
+      updateBitsDisplay();
+      window.location.href = "login.html";
     }
 
-    users.forEach(u => {
-      const div = document.createElement("div");
-      div.style.marginBottom = "10px";
-      div.innerHTML = `
-        <strong>${u}</strong>
-        <button onclick="viewProfile('${u}')">View Profile</button>
-      `;
-      list.appendChild(div);
+    function updateNavLinks() {
+      const username = localStorage.getItem("profileUsername");
+      const isAdmin = username === "Nova";
+      document.getElementById("loginLink").style.display  = username ? "none" : "inline";
+      document.getElementById("logoutLink").style.display = username ? "inline" : "none";
+      const adminBtn = document.getElementById("adminBtn");
+      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
+    }
+
+    function updateBitsDisplay() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      if (!username || !userData[username]) return;
+      const bits = userData[username].bits ?? 0;
+      const bitTop = document.getElementById("bitCountTop");
+      if (bitTop) bitTop.innerText = bits;
+    }
+
+    function searchPeople() {
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const results = Object.keys(userData)
+        .filter(user => user.toLowerCase().includes(query))
+        .map(user => {
+          return `
+            <div>
+              <strong>${user}</strong>
+              <button onclick="viewProfile('${user}')">View Profile</button>
+            </div>
+          `;
+        }).join('');
+      document.getElementById("searchResults").innerHTML = results || "<p>No results found.</p>";
+    }
+
+    function viewProfile(username) {
+      localStorage.setItem("viewingProfile", username);
+      window.location.href = "viewprofile.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateNavLinks();
+      updateBitsDisplay();
     });
-  });
-</script>
-
-
+  </script>
 </body>
 </html>
