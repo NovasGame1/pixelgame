@@ -5,7 +5,7 @@
   <title>PixelGame - Home</title>
   <link rel="stylesheet" href="style.css">
   <!-- Favicon: your custom logo in the browser tab -->
-  <link rel="icon" href="assets/WebLogo.png" type="image/png">
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
 
   <style>
     /* Bits HUD styling */
@@ -99,4 +99,15 @@
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const username = localStorage.getItem("profileUsername");
       if (!username || !userData[username]) return;
-      const bits = userData[username].bits ?? 0
+      const bits = userData[username].bits ?? 0;
+      const bitTop = document.getElementById("bitCountTop");
+      if (bitTop) bitTop.innerText = bits;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavLinks();
+      updateBitsDisplay();
+    });
+  </script>
+</body>
+</html>
