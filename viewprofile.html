@@ -68,9 +68,37 @@
       return url.searchParams.get(key);
     }
 
+    function isFriend(currentUser, targetUser, userData) {
+      return userData[currentUser]?.friends?.includes(targetUser);
+    }
+
+    function toggleFriend(targetUser) {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const currentUser = localStorage.getItem("profileUsername");
+      if (!currentUser || !userData[currentUser] || !userData[targetUser]) return;
+
+      let currentFriends = userData[currentUser].friends || [];
+      let targetFriends = userData[targetUser].friends || [];
+
+      if (currentFriends.includes(targetUser)) {
+        currentFriends = currentFriends.filter(f => f !== targetUser);
+        targetFriends = targetFriends.filter(f => f !== currentUser);
+      } else {
+        currentFriends.push(targetUser);
+        targetFriends.push(currentUser);
+      }
+
+      userData[currentUser].friends = currentFriends;
+      userData[targetUser].friends = targetFriends;
+
+      localStorage.setItem("userData", JSON.stringify(userData));
+      renderProfile(); // refresh UI
+    }
+
     function renderProfile() {
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const targetUser = getQueryParam("user");
+      const currentUser = localStorage.getItem("profileUsername");
 
       if (!targetUser || !userData[targetUser]) {
         document.getElementById("profileContent").innerHTML = "<p>User not found.</p>";
@@ -83,6 +111,10 @@
       const bits = user.bits ?? 0;
       const friends = user.friends?.length ?? 0;
 
+      const friendButton = currentUser && currentUser !== targetUser
+        ? `<button onclick="toggleFriend('${targetUser}')">${isFriend(currentUser, targetUser, userData) ? 'Unfriend' : 'Add Friend'}</button>`
+        : "";
+
       document.getElementById("profileContent").innerHTML = `
         <div class="profile-top">
           <img src="assets/images/default-avatar.png" alt="Avatar" class="avatar">
@@ -93,6 +125,7 @@
               <div class="stat"><div class="stat-number">${bits}</div><div>Bits</div></div>
               <div class="stat"><div class="stat-number">${friends}</div><div>Friends</div></div>
             </div>
+            ${friendButton}
           </div>
         </div>
 
