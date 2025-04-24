@@ -1,88 +1,39 @@
 // assets/js/achievements.js
 
-// 1) Achievement definitions
+// 1) Definitions
 const ACHIEVEMENTS = [
-  {
-    id: "welcome",
-    title: "Welcome Aboard!",
-    desc: "Created your account",
-    icon: "assets/images/achievements/welcome.png"
-  },
-  {
-    id: "first_bit",
-    title: "First Bits!",
-    desc: "Earned your first bit",
-    icon: "assets/images/achievements/first_bit.png"
-  },
-  {
-    id: "socializer",
-    title: "Socializer",
-    desc: "Befriended your first player",
-    icon: "assets/images/achievements/socializer.png"
-  },
-  {
-    id: "collector",
-    title: "Collector",
-    desc: "Bought your first item from the Shop",
-    icon: "assets/images/achievements/collector.png"
-  },
-  // … add more as you like …
+  { id: "welcome",     title: "Welcome Aboard!", desc: "Created your account", icon: "assets/images/achievements/welcome.png" },
+  { id: "first_bit",   title: "First Bits!",     desc: "Earned your first bit",   icon: "assets/images/achievements/first_bit.png" },
+  { id: "socializer",  title: "Socializer",      desc: "Befriended a player",     icon: "assets/images/achievements/socializer.png" },
+  { id: "collector",   title: "Collector",       desc: "Bought your first item",   icon: "assets/images/achievements/collector.png" },
+  // …add more here…
 ];
 
-// 2) Unlock an achievement for the current user
+// 2) Unlock badge
 function unlockAchievement(achId) {
-  const username = localStorage.getItem("profileUsername");
-  const userData = JSON.parse(localStorage.getItem("userData")) || {};
-  if (!username || !userData[username]) return;
-
-  const user = userData[username];
+  const user = JSON.parse(localStorage.getItem("userData"))?.[localStorage.getItem("profileUsername")];
+  if (!user) return;
   user.achievements = user.achievements || [];
   if (!user.achievements.includes(achId)) {
     user.achievements.push(achId);
-    localStorage.setItem("userData", JSON.stringify(userData));
-    // Optional: notify user
+    localStorage.setItem("userData", JSON.stringify(JSON.parse(localStorage.getItem("userData"))));
     alert(`🏆 Achievement Unlocked: ${ACHIEVEMENTS.find(a=>a.id===achId).title}`);
   }
 }
 
-// 3) Call this once on profile load to ensure base achievements
-function checkBaseAchievements() {
-  const username = localStorage.getItem("profileUsername");
-  const userData = JSON.parse(localStorage.getItem("userData")) || {};
-  if (!username || !userData[username]) return;
-  const user = userData[username];
-
-  // welcome
-  unlockAchievement("welcome");
-
-  // first_bit
-  if ((user.bits ?? 0) > 0) unlockAchievement("first_bit");
-
-  // socializer
-  if ((user.friends || []).length > 0) unlockAchievement("socializer");
-
-  // collector
-  if (user.shirtsEquipped || user.pantsEquipped) unlockAchievement("collector");
-}
-
-// 4) Render achievements on the Profile page
+// 3) Render badges (locked ones are greyed out)
 function renderAchievements() {
   const container = document.getElementById("achievementsList");
-  const username = localStorage.getItem("profileUsername");
-  const userData = JSON.parse(localStorage.getItem("userData")) || {};
-  if (!username || !userData[username]) {
-    container.innerHTML = "<p>Log in to see achievements.</p>";
-    return;
-  }
-  const unlocked = userData[username].achievements || [];
+  const user = JSON.parse(localStorage.getItem("userData"))?.[localStorage.getItem("profileUsername")];
+  const unlocked = user?.achievements || [];
   container.innerHTML = ACHIEVEMENTS.map(a => {
-    const isUnlocked = unlocked.includes(a.id);
+    const done = unlocked.includes(a.id);
     return `
-      <div class="ach-card ${isUnlocked ? "unlocked" : "locked"}">
-        <img src="${a.icon}" alt="${a.title}" class="ach-icon"${isUnlocked ? "" : " style='filter: grayscale(100%)'"}>
+      <div class="ach-card ${done?"unlocked":"locked"}">
+        <img src="${a.icon}" class="ach-icon" ${done?"":`style="filter:grayscale(100%)"`}>
         <div class="ach-info">
           <strong>${a.title}</strong>
-          <p>${isUnlocked ? a.desc : "???"}</p>
+          <p>${done? a.desc : "Locked"}</p>
         </div>
       </div>
     `;
