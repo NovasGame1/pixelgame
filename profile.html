@@ -4,22 +4,22 @@
   <meta charset="UTF-8">
   <title>PixelGame - Profile</title>
 
-  <!-- FAVICON (works locally and online) -->
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <!-- FAVICON (relative path so it works locally too) -->
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
 
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Bits Display -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
 
   <div class="page-wrapper">
     <header>
-      <!-- Logo -->
+      <!-- Site Logo in header -->
       <a href="index.html" class="site-logo-link">
         <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
       </a>
+
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
@@ -33,19 +33,8 @@
     </header>
 
     <main>
-      <div class="section-box">
-        <h2>Your Profile</h2>
-        <div class="profile-top">
-          <img src="assets/images/logo.png" class="avatar" alt="Avatar">
-          <div class="profile-info">
-            <div class="username" id="profileUsername">Username</div>
-            <div class="join-date" id="profileJoinDate">Joined: ???</div>
-            <textarea id="bioField" rows="4" style="width: 100%; resize: none;"></textarea>
-            <br><br>
-            <button onclick="saveBio()">Save Bio</button>
-          </div>
-        </div>
-      </div>
+      <!-- Profile content goes here -->
+      <div id="profileContent">Loading profile...</div>
     </main>
 
     <footer>
@@ -55,19 +44,19 @@
 
   <script>
     function logout() {
-      localStorage.removeItem("profileUsername");
-      localStorage.removeItem("profileBio");
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
       updateNavLinks();
-      window.location.href = "login.html";
+      window.location.href = 'login.html';
     }
 
     function updateNavLinks() {
-      const username = localStorage.getItem("profileUsername");
+      const username = localStorage.getItem('profileUsername');
       const isAdmin = username === "Nova";
-      document.getElementById("loginLink").style.display = username ? "none" : "inline";
-      document.getElementById("logoutLink").style.display = username ? "inline" : "none";
+      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
       const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
     }
 
     function updateBitsDisplay() {
@@ -75,30 +64,13 @@
       const username = localStorage.getItem("profileUsername");
       if (!username || !userData[username]) return;
       const bits = userData[username].bits ?? 0;
-      document.getElementById("bitCountTop").innerText = bits;
+      const bitTop = document.getElementById("bitCountTop");
+      if (bitTop) bitTop.innerText = bits;
     }
 
-    function saveBio() {
-      const bio = document.getElementById("bioField").value;
-      localStorage.setItem("profileBio", bio);
-      alert("Bio saved!");
-    }
-
-    function loadProfile() {
-      const username = localStorage.getItem("profileUsername");
-      if (!username) {
-        window.location.href = "login.html";
-        return;
-      }
-      document.getElementById("profileUsername").innerText = username;
-      document.getElementById("profileJoinDate").innerText = "Joined: 2025";
-      document.getElementById("bioField").value = localStorage.getItem("profileBio") || "";
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener('DOMContentLoaded', () => {
       updateNavLinks();
       updateBitsDisplay();
-      loadProfile();
     });
   </script>
 </body>
