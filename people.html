@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>PixelGame - People</title>
 
-  <!-- Logo for browser tab -->
+  <!-- Logo for tab -->
   <link rel="icon" href="assets/images/logo.png" type="image/png">
   <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
 
@@ -32,9 +32,11 @@
     </header>
 
     <main>
-      <h2>Search Players</h2>
-      <input type="text" id="searchInput" placeholder="Enter username..." style="padding: 10px; width: 100%; max-width: 400px;">
-      <div class="friends-grid" id="peopleList" style="margin-top: 20px;"></div>
+      <h2>Search for People</h2>
+      <input type="text" id="searchInput" placeholder="Enter username..." />
+      <button onclick="searchPeople()">Search</button>
+
+      <div id="searchResults" style="margin-top: 25px;"></div>
     </main>
 
     <footer>
@@ -67,40 +69,87 @@
       document.getElementById("bitCountTop").innerText = bits;
     }
 
-    function renderPeopleList(filter = "") {
+    function searchPeople() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const currentUser = localStorage.getItem("profileUsername");
-      const peopleList = document.getElementById("peopleList");
-      peopleList.innerHTML = "";
+      const resultsDiv = document.getElementById("searchResults");
 
-      Object.keys(userData).forEach(username => {
-        if (username === currentUser) return;
-        if (!username.toLowerCase().includes(filter.toLowerCase())) return;
+      resultsDiv.innerHTML = '';
+
+      if (!query) {
+        resultsDiv.innerHTML = "<p>Please enter a username to search.</p>";
+        return;
+      }
+
+      const matches = Object.keys(userData).filter(name =>
+        name.toLowerCase().includes(query) && name !== currentUser
+      );
+
+      if (matches.length === 0) {
+        resultsDiv.innerHTML = "<p>No users found.</p>";
+        return;
+      }
+
+      matches.forEach(name => {
+        const user = userData[name];
+        const isFriend = userData[currentUser]?.friends?.includes(name);
+        const bio = user.bio || "This user hasn't written a bio yet.";
+        const joinDate = user.joinDate || "Unknown";
 
         const card = document.createElement("div");
-        card.className = "friend-card";
+        card.className = "section-box";
         card.innerHTML = `
-          <img src="assets/images/default-avatar.png" alt="${username}">
-          <div><strong>${username}</strong></div>
-          <button onclick="viewProfile('${username}')">View</button>
+          <div class="profile-top">
+            <img src="assets/images/default-avatar.png" alt="Avatar" class="avatar">
+            <div class="profile-info">
+              <div class="username">${name}</div>
+              <div class="join-date">Joined: ${joinDate}</div>
+              <div class="stat-grid">
+                <div class="stat"><div class="stat-number">${user.bits ?? 0}</div><div>Bits</div></div>
+                <div class="stat"><div class="stat-number">${(user.friends ?? []).length}</div><div>Friends</div></div>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top: 15px;">${bio}</p>
+          <button onclick="${isFriend ? `unfriend('${name}')` : `sendFriendRequest('${name}')`}">
+            ${isFriend ? "Unfriend" : "Send Friend Request"}
+          </button>
         `;
-        peopleList.appendChild(card);
+        resultsDiv.appendChild(card);
       });
     }
 
-    function viewProfile(username) {
-      localStorage.setItem("viewProfile", username);
-      window.location.href = "viewprofile.html";
+    function sendFriendRequest(target) {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const currentUser = localStorage.getItem("profileUsername");
+
+      if (!userData[currentUser].friends) userData[currentUser].friends = [];
+      if (!userData[target].friends) userData[target].friends = [];
+
+      userData[currentUser].friends.push(target);
+      userData[target].friends.push(currentUser);
+
+      localStorage.setItem("userData", JSON.stringify(userData));
+      alert(`You are now friends with ${target}`);
+      searchPeople();
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    function unfriend(target) {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const currentUser = localStorage.getItem("profileUsername");
+
+      userData[currentUser].friends = (userData[currentUser].friends || []).filter(f => f !== target);
+      userData[target].friends = (userData[target].friends || []).filter(f => f !== currentUser);
+
+      localStorage.setItem("userData", JSON.stringify(userData));
+      alert(`You have unfriended ${target}`);
+      searchPeople();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
       updateNavLinks();
       updateBitsDisplay();
-      renderPeopleList();
-
-      document.getElementById("searchInput").addEventListener("input", (e) => {
-        renderPeopleList(e.target.value);
-      });
     });
   </script>
 </body>
