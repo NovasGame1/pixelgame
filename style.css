@@ -195,28 +195,26 @@ header nav {
 .achievements-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 10px;
   justify-content: center;
-  margin-top: 15px;
+  margin-top: 10px;
 }
 .ach-card {
-  width: 120px;
+  width: 80px;
+  padding: 8px;
   background: #fff;
   border: 1px solid #aaa;
   border-radius: 6px;
   text-align: center;
-  padding: 10px;
 }
 .ach-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 8px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
 }
 .ach-info p {
-  margin: 4px 0 0;
-  font-size: 0.9em;
+  margin: 2px 0 0;
+  font-size: 0.8em;
   color: #555;
 }
-.locked .ach-icon {
-  opacity: 0.4;
-}
+
