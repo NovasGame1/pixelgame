@@ -3,35 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <title>PixelGame - Profile</title>
+
+  <!-- FAVICON -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+
   <link rel="stylesheet" href="style.css">
-  <style>
-    #bitsDisplay {
-      position: fixed;
-      top: 10px;
-      right: 20px;
-      background: #fff;
-      border: 2px solid #444;
-      border-radius: 10px;
-      padding: 6px 12px;
-      font-weight: bold;
-      z-index: 1000;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-    }
-  </style>
 </head>
 <body>
-  <!-- Bits HUD in Top Right -->
+  <!-- Bits HUD -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
 
   <div class="page-wrapper">
     <header>
-      <h1>PixelGame</h1>
+      <!-- Site logo -->
+      <a href="index.html" class="site-logo-link">
+        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
+      </a>
+
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
         <a href="profile.html">Profile</a>
         <a href="people.html">People</a>
-                <a href="shop.html">Shop</a>
+        <a href="shop.html">Shop</a>
         <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
         <a href="login.html" id="loginLink">Login</a>
         <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
@@ -39,42 +34,14 @@
     </header>
 
     <main>
-      <!-- Profile Top Section -->
-      <div class="section-box profile-top">
-        <img src="https://via.placeholder.com/150x150?text=Avatar" alt="Avatar" class="avatar">
-        <div class="profile-info">
-          <h2 class="username" id="displayUsername">Guest</h2>
-          <p class="join-date">Joined: April 2025</p>
-          <p class="bits-balance">Bits: <span id="bitCount">0</span></p>
-          <button onclick="logout()" class="logout-button">Logout</button>
-        </div>
-      </div>
-
-      <!-- Bio Section -->
       <div class="section-box">
-        <h2>About Me</h2>
-        <p id="displayBio">No bio set yet.</p>
-
-        <div id="editBioSection" style="display: none;">
-          <textarea id="bioInput" rows="5" cols="40"></textarea><br><br>
-          <button onclick="saveBio()">Save Bio</button>
-          <button onclick="cancelEdit()">Cancel</button>
-        </div>
-
-        <button id="editBioBtn" onclick="showBioEditor()">Edit Bio</button>
+        <h2>Welcome, <span id="profileUsername">Guest</span>!</h2>
+        <p>About Me:</p>
+        <textarea id="bioBox" placeholder="Write something..." rows="4" cols="50"></textarea>
+        <br><br>
+        <button onclick="saveBio()">Save Bio</button>
       </div>
-
-      <!-- Friend Requests Section -->
-      <div class="section-box">
-        <h2>Friend Requests</h2>
-        <div id="requestList"><em>Loading...</em></div>
-      </div>
-
-      <!-- Friends List Section -->
-      <div class="section-box">
-        <h2>Your Friends</h2>
-        <div id="friendsList"><em>Loading...</em></div>
-      </div>
+    </main>
 
     <footer>
       © 2025 PixelGame.
@@ -82,179 +49,54 @@
   </div>
 
   <script>
-    // On load, check for session; if not, redirect to login.
-    const username = localStorage.getItem('profileUsername');
-    const storedBio = localStorage.getItem('profileBio');
-    if (!username) {
-      window.location.href = 'login.html';
-    } else {
-      document.getElementById('displayUsername').innerText = username;
-      document.getElementById('displayBio').innerText = storedBio || "This user has no bio yet.";
-    }
-
-    // Logout function
     function logout() {
-      localStorage.removeItem('profileUsername');
-      localStorage.removeItem('profileBio');
+      localStorage.removeItem("profileUsername");
+      localStorage.removeItem("profileBio");
       updateNavLinks();
-      window.location.href = 'login.html';
+      updateBitsDisplay();
+      window.location.href = "login.html";
     }
 
-    // Nav links update function
     function updateNavLinks() {
-      const username = localStorage.getItem('profileUsername');
+      const username = localStorage.getItem("profileUsername");
       const isAdmin = username === "Nova";
-      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
-      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
-      const adminBtn = document.getElementById('adminBtn');
-      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+      document.getElementById("loginLink").style.display  = username ? "none" : "inline";
+      document.getElementById("logoutLink").style.display = username ? "inline" : "none";
+      const adminBtn = document.getElementById("adminBtn");
+      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
     }
 
-    // Bio editor functions
-    function showBioEditor() {
-      document.getElementById('editBioSection').style.display = 'block';
-      document.getElementById('editBioBtn').style.display = 'none';
-      document.getElementById('bioInput').value = localStorage.getItem('profileBio') || '';
-    }
-
-    function cancelEdit() {
-      document.getElementById('editBioSection').style.display = 'none';
-      document.getElementById('editBioBtn').style.display = 'inline';
-    }
-
-    function saveBio() {
-      const newBio = document.getElementById('bioInput').value;
-      localStorage.setItem('profileBio', newBio);
-      document.getElementById('displayBio').innerText = newBio;
-      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-      const username = localStorage.getItem('profileUsername');
-      if (registeredUsers.includes(username)) {
-        let userData = JSON.parse(localStorage.getItem('userData')) || {};
-        if (userData[username]) {
-          userData[username].bio = newBio;
-          localStorage.setItem('userData', JSON.stringify(userData));
-        }
-      }
-      cancelEdit();
-    }
-
-    // Friend Requests functions
-    function loadFriendRequests() {
-      const currentUser = localStorage.getItem('profileUsername');
-      const friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
-      const listDiv = document.getElementById("requestList");
-      const requests = friendRequests[currentUser] || [];
-      if (requests.length === 0) {
-        listDiv.innerHTML = "<p>No friend requests.</p>";
-        return;
-      }
-      listDiv.innerHTML = "";
-      requests.forEach(fromUser => {
-        const item = document.createElement("div");
-        item.innerHTML = `
-          <strong>${fromUser}</strong>
-          <button onclick="acceptFriend('${fromUser}')">Accept</button>
-        `;
-        listDiv.appendChild(item);
-      });
-    }
-
-    function acceptFriend(fromUser) {
-      const currentUser = localStorage.getItem('profileUsername');
-      let friendRequests = JSON.parse(localStorage.getItem('friendRequests')) || {};
-      let friends = JSON.parse(localStorage.getItem('friends')) || {};
-      if (!Array.isArray(friends[currentUser])) friends[currentUser] = [];
-      if (!Array.isArray(friends[fromUser])) friends[fromUser] = [];
-      friendRequests[currentUser] = (friendRequests[currentUser] || []).filter(name => name !== fromUser);
-      localStorage.setItem('friendRequests', JSON.stringify(friendRequests));
-      if (!friends[currentUser].includes(fromUser)) friends[currentUser].push(fromUser);
-      if (!friends[fromUser].includes(currentUser)) friends[fromUser].push(currentUser);
-      localStorage.setItem('friends', JSON.stringify(friends));
-      alert("You and " + fromUser + " are now friends!");
-      loadFriendRequests();
-      loadFriendsList();
-    }
-
-    // Friends List functions
-    function loadFriendsList() {
-      const currentUser = localStorage.getItem('profileUsername');
-      const friends = JSON.parse(localStorage.getItem('friends')) || {};
-      const myFriends = friends[currentUser] || [];
-      const container = document.getElementById('friendsList');
-      if (myFriends.length === 0) {
-        container.innerHTML = "<p>You don't have any friends yet.</p>";
-        return;
-      }
-      container.innerHTML = "";
-      myFriends.forEach(friendName => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <strong>${friendName}</strong>
-          <button onclick="viewFriend('${friendName}')">View</button>
-          <button onclick="unfriend('${friendName}')">Unfriend</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function viewFriend(name) {
-      localStorage.setItem("viewingUser", name);
-      window.location.href = "viewprofile.html";
-    }
-
-    function unfriend(name) {
-      const currentUser = localStorage.getItem('profileUsername');
-      let friends = JSON.parse(localStorage.getItem('friends')) || {};
-      if (friends[currentUser]) {
-        friends[currentUser] = friends[currentUser].filter(f => f !== name);
-      }
-      if (friends[name]) {
-        friends[name] = friends[name].filter(f => f !== currentUser);
-      }
-      localStorage.setItem('friends', JSON.stringify(friends));
-      alert(`You and ${name} are no longer friends.`);
-      loadFriendsList();
-    }
-
-    // --- Dynamic Bits Functions ---
     function updateBitsDisplay() {
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
       const username = localStorage.getItem("profileUsername");
-      const bits = (userData[username] && userData[username].bits) || 0;
-      document.getElementById("bitCount").innerText = bits;
-      document.getElementById("bitCountTop").innerText = bits;
+      if (!username || !userData[username]) return;
+      const bits = userData[username].bits ?? 0;
+      const bitTop = document.getElementById("bitCountTop");
+      if (bitTop) bitTop.innerText = bits;
     }
 
-    function earnBits(amount) {
+    function saveBio() {
+      const newBio = document.getElementById("bioBox").value;
       const username = localStorage.getItem("profileUsername");
-      if (!username) return;
-      let userData = JSON.parse(localStorage.getItem("userData")) || {};
-      if (!userData[username]) { userData[username] = { bits: 0 }; }
-      userData[username].bits = (userData[username].bits || 0) + amount;
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      if (!username || !userData[username]) return;
+      userData[username].bio = newBio;
       localStorage.setItem("userData", JSON.stringify(userData));
-      updateBitsDisplay();
+      alert("Bio saved!");
     }
 
-    function spendBits(amount) {
-      const username = localStorage.getItem("profileUsername");
-      if (!username) return;
-      let userData = JSON.parse(localStorage.getItem("userData")) || {};
-      if (!userData[username]) { userData[username] = { bits: 0 }; }
-      if (userData[username].bits < amount) {
-        alert("Not enough Bits!");
-        return;
-      }
-      userData[username].bits -= amount;
-      localStorage.setItem("userData", JSON.stringify(userData));
-      updateBitsDisplay();
-    }
-    // --- End Dynamic Bits Functions ---
-
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
       updateNavLinks();
-      loadFriendRequests();
-      loadFriendsList();
       updateBitsDisplay();
+      const username = localStorage.getItem("profileUsername");
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      if (username) {
+        document.getElementById("profileUsername").innerText = username;
+        const user = userData[username];
+        if (user && user.bio) {
+          document.getElementById("bioBox").value = user.bio;
+        }
+      }
     });
   </script>
 </body>
