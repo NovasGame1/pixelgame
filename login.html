@@ -47,51 +47,50 @@
   </div>
 
 <script>
-  document.getElementById("loginForm").addEventListener("submit", function (e) {
+  document.getElementById("loginForm").addEventListener("submit", function(e) {
     e.preventDefault();
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
     const userData = JSON.parse(localStorage.getItem("userData")) || {};
 
     if (!userData[username]) {
-      alert("User not found.");
-      return;
+      return alert("User not found.");
     }
-
     const user = userData[username];
-
-    // 🔒 Banned User Check
     const now = Date.now();
+
+    // ——— BAN ENFORCEMENT ———
     if (user.isBanned) {
+      // auto-unban if expired
       if (user.banExpires && now > user.banExpires) {
-        // Auto-unban if time passed
         user.isBanned = false;
         delete user.banReason;
         delete user.banExpires;
         localStorage.setItem("userData", JSON.stringify(userData));
       } else {
-        let msg = "🚫 Your account has been banned.";
+        let msg = "🚫 You are banned from PixelGame.";
         msg += "\n\nReason: " + (user.banReason || "No reason provided.");
         if (user.banExpires) {
           msg += "\nBan expires: " + new Date(user.banExpires).toLocaleString();
         } else {
-          msg += "\nBan duration: Permanent";
+          msg += "\nDuration: Permanent";
         }
-        alert(msg);
-        return;
+        return alert(msg);
       }
     }
 
+    // check password
     if (user.password !== password) {
-      alert("Incorrect password.");
-      return;
+      return alert("Incorrect password.");
     }
 
+    // successful
     localStorage.setItem("profileUsername", username);
     localStorage.setItem("profileBio", user.bio || "");
     window.location.href = "profile.html";
   });
 </script>
+
 
 
 
