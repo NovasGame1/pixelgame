@@ -32,11 +32,9 @@
     </header>
 
     <main>
-      <h2>Search for People</h2>
-      <input type="text" id="searchInput" placeholder="Enter username..." />
-      <button onclick="searchPeople()">Search</button>
-
-      <div id="searchResults" style="margin-top: 25px;"></div>
+      <h2>All Players</h2>
+      <input type="text" id="searchBox" placeholder="Search usernames..." oninput="renderPeopleList()" style="width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px;">
+      <div id="peopleList">Loading...</div>
     </main>
 
     <footer>
@@ -69,87 +67,41 @@
       document.getElementById("bitCountTop").innerText = bits;
     }
 
-    function searchPeople() {
-      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+    function renderPeopleList() {
+      const search = document.getElementById("searchBox").value.toLowerCase();
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const currentUser = localStorage.getItem("profileUsername");
-      const resultsDiv = document.getElementById("searchResults");
+      const peopleDiv = document.getElementById("peopleList");
 
-      resultsDiv.innerHTML = '';
+      let html = "";
+      for (const username in userData) {
+        if (!username.toLowerCase().includes(search)) continue;
 
-      if (!query) {
-        resultsDiv.innerHTML = "<p>Please enter a username to search.</p>";
-        return;
-      }
-
-      const matches = Object.keys(userData).filter(name =>
-        name.toLowerCase().includes(query) && name !== currentUser
-      );
-
-      if (matches.length === 0) {
-        resultsDiv.innerHTML = "<p>No users found.</p>";
-        return;
-      }
-
-      matches.forEach(name => {
-        const user = userData[name];
-        const isFriend = userData[currentUser]?.friends?.includes(name);
-        const bio = user.bio || "This user hasn't written a bio yet.";
-        const joinDate = user.joinDate || "Unknown";
-
-        const card = document.createElement("div");
-        card.className = "section-box";
-        card.innerHTML = `
-          <div class="profile-top">
-            <img src="assets/images/default-avatar.png" alt="Avatar" class="avatar">
-            <div class="profile-info">
-              <div class="username">${name}</div>
-              <div class="join-date">Joined: ${joinDate}</div>
-              <div class="stat-grid">
-                <div class="stat"><div class="stat-number">${user.bits ?? 0}</div><div>Bits</div></div>
-                <div class="stat"><div class="stat-number">${(user.friends ?? []).length}</div><div>Friends</div></div>
+        const user = userData[username];
+        html += `
+          <div class="section-box" style="text-align: left;">
+            <div style="display: flex; gap: 20px; align-items: center;">
+              <img src="assets/images/default-avatar.png" alt="Avatar" class="avatar" style="width: 80px; height: 80px;">
+              <div>
+                <div class="username">${username}</div>
+                <div style="font-size: 0.95em; color: #666;">Joined: ${user.joinDate || "Unknown"}</div>
+                <div style="margin-top: 8px;">${user.bio || "No bio yet."}</div>
+                <div style="margin-top: 10px; font-size: 0.95em;">
+                  <strong>Bits:</strong> ${user.bits ?? 0} |
+                  <strong>Friends:</strong> ${(user.friends ?? []).length}
+                </div>
               </div>
             </div>
           </div>
-          <p style="margin-top: 15px;">${bio}</p>
-          <button onclick="${isFriend ? `unfriend('${name}')` : `sendFriendRequest('${name}')`}">
-            ${isFriend ? "Unfriend" : "Send Friend Request"}
-          </button>
         `;
-        resultsDiv.appendChild(card);
-      });
-    }
+      }
 
-    function sendFriendRequest(target) {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const currentUser = localStorage.getItem("profileUsername");
-
-      if (!userData[currentUser].friends) userData[currentUser].friends = [];
-      if (!userData[target].friends) userData[target].friends = [];
-
-      userData[currentUser].friends.push(target);
-      userData[target].friends.push(currentUser);
-
-      localStorage.setItem("userData", JSON.stringify(userData));
-      alert(`You are now friends with ${target}`);
-      searchPeople();
-    }
-
-    function unfriend(target) {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const currentUser = localStorage.getItem("profileUsername");
-
-      userData[currentUser].friends = (userData[currentUser].friends || []).filter(f => f !== target);
-      userData[target].friends = (userData[target].friends || []).filter(f => f !== currentUser);
-
-      localStorage.setItem("userData", JSON.stringify(userData));
-      alert(`You have unfriended ${target}`);
-      searchPeople();
+      peopleDiv.innerHTML = html || "<p>No users found.</p>";
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       updateNavLinks();
       updateBitsDisplay();
+      renderPeopleList();
     });
   </script>
 </body>
