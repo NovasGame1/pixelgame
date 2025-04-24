@@ -9,139 +9,176 @@
   <link rel="stylesheet" href="style.css">
   <style>
     body {
-      background-color: #f2f2f2;
+      background-color: #e0e0e0;
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      color: #333;
+      margin: 0; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh;
     }
-    .page-wrapper {
-      width: 90%;
-      max-width: 400px;
-      margin: 80px auto;
-      text-align: center;
-    }
-    header {
-      margin-bottom: 40px;
-      text-align: center;
-    }
-    .site-logo {
-      height: 60px;
-      width: auto;
-    }
-    .login-box {
+    .login-card {
       background: #fff;
-      border: 1px solid #aaa;
+      width: 100%; max-width: 360px;
       padding: 30px;
       border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: relative;
     }
-    .login-box h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-size: 1.8em;
-      color: #c42b1c;
+    .login-card h2 {
+      margin-top: 0; color: #c42b1c;
+      text-align: center;
     }
-    .login-box input {
-      width: 100%;
-      padding: 10px;
+    .login-card input[type="text"],
+    .login-card input[type="password"] {
+      width: 100%; padding: 10px;
       margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border: 1px solid #ccc; border-radius: 4px;
       font-size: 1em;
     }
-    .login-box button {
-      width: 100%;
-      padding: 10px;
-      background-color: #c42b1c;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 1em;
-      cursor: pointer;
-      border: 2px solid #900;
+    .password-wrapper {
+      position: relative;
     }
-    .login-box button:hover {
+    .password-wrapper button {
+      position: absolute;
+      right: 10px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      cursor: pointer; font-size: 1.1em;
+    }
+    .login-card button.primary {
+      width: 100%; padding: 10px;
+      background-color: #c42b1c; color: #fff;
+      border: 2px solid #900; border-radius: 4px;
+      font-size: 1em; cursor: pointer;
+      margin-top: 10px;
+    }
+    .login-card button.primary:hover {
       background-color: #a82317;
     }
-    nav a {
-      margin: 0 10px;
-      color: #000;
-      text-decoration: none;
-      font-weight: bold;
+    .login-card button.secondary {
+      width: 100%; padding: 8px;
+      background: #f2f2f2; color: #333;
+      border: 1px solid #ccc; border-radius: 4px;
+      font-size: 0.95em; cursor: pointer;
+      margin-top: 8px;
     }
-    nav {
-      margin-top: 10px;
+    .login-card .links {
+      margin-top: 12px; font-size: 0.9em;
+      text-align: center;
+    }
+    .login-card .links a {
+      margin: 0 8px; color: #0066cc;
+      text-decoration: none;
+    }
+    .login-card .links a:hover {
+      text-decoration: underline;
+    }
+    #maintenanceBanner {
+      background: #ffeb3b;
+      color: #000;
+      padding: 10px;
+      text-align: center;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="page-wrapper">
-    <header>
-      <a href="index.html">
-        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
-      </a>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="profile.html">Profile</a>
-        <a href="people.html">People</a>
-        <a href="shop.html">Shop</a>
-      </nav>
-    </header>
+  <div class="login-card">
+    <div id="maintenanceBanner">⚠️ The site is under maintenance. Only owner can log in.</div>
 
-    <div class="login-box">
-      <h2>Member Login</h2>
-      <form id="loginForm">
-        <input type="text" id="username" placeholder="Username" required>
+    <h2>Member Login</h2>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username" required>
+      <div class="password-wrapper">
         <input type="password" id="password" placeholder="Password" required>
-        <button type="submit">Log In</button>
-      </form>
+        <button type="button" id="togglePassBtn">👁️</button>
+      </div>
+      <button type="submit" class="primary" id="loginBtn">Log In</button>
+    </form>
+
+    <button class="secondary" id="guestBtn">Continue as Guest</button>
+
+    <div class="links">
+      <a href="register.html">Create Account</a> |
+      <a href="#">Forgot Password?</a>
     </div>
   </div>
 
   <script>
+    // Toggle maintenance banner & disable buttons if on
+    const maintenance = localStorage.getItem("maintenanceMode") === "true";
+    if (maintenance) {
+      document.getElementById("maintenanceBanner").style.display = "block";
+      document.getElementById("loginBtn").disabled = true;
+      document.getElementById("guestBtn").disabled = true;
+    }
+
+    // Show/Hide password
+    document.getElementById("togglePassBtn").addEventListener("click", () => {
+      const pw = document.getElementById("password");
+      pw.type = pw.type === "password" ? "text" : "password";
+    });
+
+    // Login form handler
     document.getElementById("loginForm").addEventListener("submit", function(e) {
       e.preventDefault();
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value;
+      const ud = JSON.parse(localStorage.getItem("userData")) || {};
 
-      if (!userData[username]) {
-        return alert("User not found.");
-      }
-      const user = userData[username];
-      const now  = Date.now();
+      if (!ud[u]) return alert("User not found.");
+      const user = ud[u];
+      const now = Date.now();
 
-      // —— BAN ENFORCEMENT ——
+      // Ban enforcement
       if (user.isBanned) {
         if (user.banExpires && now > user.banExpires) {
-          // Auto-unban expired temp bans
-          user.isBanned   = false;
+          user.isBanned = false;
           delete user.banReason;
           delete user.banExpires;
-          localStorage.setItem("userData", JSON.stringify(userData));
+          localStorage.setItem("userData", JSON.stringify(ud));
         } else {
-          let msg = "🚫 You are banned from PixelGame.";
-          msg += "\n\nReason: " + (user.banReason || "No reason provided.");
-          if (user.banExpires) {
-            msg += "\nBan expires: " + new Date(user.banExpires).toLocaleString();
-          } else {
-            msg += "\nDuration: Permanent";
-          }
+          let msg = "🚫 You are banned.\n\nReason: " + (user.banReason || "No reason");
+          if (user.banExpires) msg += "\nExpires: " + new Date(user.banExpires).toLocaleString();
+          else msg += "\nDuration: Permanent";
           return alert(msg);
         }
       }
 
-      // —— PASSWORD CHECK ——
-      if (user.password !== password) {
-        return alert("Incorrect password.");
-      }
+      if (user.password !== p) return alert("Incorrect password.");
 
-      // —— SUCCESSFUL LOGIN ——
+      // Successful login
       user.lastLogin = now;
-      localStorage.setItem("userData", JSON.stringify(userData));
-      localStorage.setItem("profileUsername", username);
+      localStorage.setItem("userData", JSON.stringify(ud));
+      localStorage.setItem("profileUsername", u);
       localStorage.setItem("profileBio", user.bio || "");
+      window.location.href = "profile.html";
+    });
+
+    // Guest login handler
+    document.getElementById("guestBtn").addEventListener("click", function() {
+      if (maintenance) return alert("Site under maintenance.");
+      const ud = JSON.parse(localStorage.getItem("userData")) || {};
+      // count existing Guest # entries
+      let max = 0;
+      Object.keys(ud).forEach(name => {
+        const m = name.match(/^Guest (\d+)$/);
+        if (m) max = Math.max(max, parseInt(m[1]));
+      });
+      const guestName = "Guest " + (max + 1);
+      // create guest profile
+      ud[guestName] = {
+        password: "",
+        bio: "",
+        friends: [],
+        bits: 0,
+        joinDate: new Date().toLocaleDateString(),
+        lastLogin: Date.now()
+      };
+      localStorage.setItem("userData", JSON.stringify(ud));
+      localStorage.setItem("profileUsername", guestName);
+      localStorage.setItem("profileBio", "");
       window.location.href = "profile.html";
     });
   </script>
