@@ -1,41 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>PixelGame - Home</title>
 
-  <!-- FAVICON (relative path for file:// preview) -->
-  <link rel="icon" href="assets/images/logo.png" type="image/png">
-  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
+  <link rel="icon" href="assets/images/logo.png" type="image/png" />
+  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png" />
+  <link rel="stylesheet" href="style.css" />
 
-  <link rel="stylesheet" href="style.css">
   <style>
-    /* Bits HUD */
-    #bitsDisplay {
-      position: fixed;
-      top: 10px;
-      right: 20px;
-      background: #fff;
-      border: 2px solid #444;
-      border-radius: 10px;
-      padding: 6px 12px;
-      font-weight: bold;
-      z-index: 1000;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    .hero {
+      background-color: #fff;
+      border: 1px solid #aaa;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 40px;
     }
-    /* Header logo */
-    .site-logo-link {
-      display: inline-block;
-      vertical-align: middle;
-      margin-right: 20px;
+
+    .hero h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
     }
-    .site-logo {
-      height: 40px;
-      width: auto;
+
+    .hero p {
+      font-size: 1.2em;
+      line-height: 1.6;
+      margin-bottom: 30px;
     }
-    header nav {
-      display: inline-block;
-      vertical-align: middle;
+
+    .hero button {
+      font-size: 1.1em;
+      padding: 12px 30px;
+    }
+
+    .featured-section {
+      text-align: center;
+    }
+
+    .featured-section img {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+    }
+
+    .spaced {
+      margin-top: 30px;
     }
   </style>
 </head>
@@ -45,7 +55,7 @@
   <div class="page-wrapper">
     <header>
       <a href="index.html" class="site-logo-link">
-        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
+        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo" />
       </a>
       <nav>
         <a href="index.html">Home</a>
@@ -60,37 +70,44 @@
     </header>
 
     <main>
-      <div class="section-box home-content">
-        <h2>Welcome to PixelGame!</h2>
-        <p>This is your hub for classic fun and imagination. Play games, build worlds, and relive the good ol' days!</p>
-        <button onclick="launchGame()">Play Featured Game</button>
+      <div class="hero">
+        <h2>Welcome to PixelGame</h2>
+        <p>
+          Dive into a universe of creativity. Play, build, and share games like the old days — PixelGame brings retro vibes and modern fun together.
+        </p>
+        <button onclick="window.location.href='games.html'">🎮 Play Games</button>
+      </div>
+
+      <div class="featured-section">
+        <h2>Featured World</h2>
+        <p>Jump into a fan favorite!</p>
+        <img src="assets/images/featured.png" alt="Featured Game" />
+        <div class="spaced">
+          <button onclick="alert('Launching Pixel Plaza...')">▶ Play Pixel Plaza</button>
+        </div>
       </div>
     </main>
 
     <footer>
-      © 2025 PixelGame.
+      © 2025 PixelGame. Powered by fun and nostalgia.
     </footer>
   </div>
 
   <script>
     function logout() {
-      localStorage.removeItem('profileUsername');
-      localStorage.removeItem('profileBio');
+      localStorage.removeItem("profileUsername");
+      localStorage.removeItem("profileBio");
       updateNavLinks();
-      window.location.href = 'login.html';
+      window.location.href = "login.html";
     }
 
     function updateNavLinks() {
-      const username = localStorage.getItem('profileUsername');
+      const username = localStorage.getItem("profileUsername");
       const isAdmin = username === "Nova";
-      document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
-      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
+      document.getElementById("loginLink").style.display = username ? "none" : "inline";
+      document.getElementById("logoutLink").style.display = username ? "inline" : "none";
       const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
-    }
-
-    function launchGame() {
-      alert("Loading game... (Coming soon!)");
+      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
     }
 
     function updateBitsDisplay() {
@@ -98,11 +115,10 @@
       const username = localStorage.getItem("profileUsername");
       if (!username || !userData[username]) return;
       const bits = userData[username].bits ?? 0;
-      const bitTop = document.getElementById("bitCountTop");
-      if (bitTop) bitTop.innerText = bits;
+      document.getElementById("bitCountTop").innerText = bits;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
       updateNavLinks();
       updateBitsDisplay();
     });
