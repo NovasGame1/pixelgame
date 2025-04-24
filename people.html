@@ -4,14 +4,11 @@
   <meta charset="UTF-8">
   <title>PixelGame - People</title>
 
-  <!-- Logo for tab -->
   <link rel="icon" href="assets/images/logo.png" type="image/png">
   <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
-
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Bits HUD -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
 
   <div class="page-wrapper">
@@ -67,18 +64,42 @@
       document.getElementById("bitCountTop").innerText = bits;
     }
 
+    function sendFriendRequest(target) {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      if (!username || !userData[target] || !userData[username]) return;
+
+      const targetFriends = userData[target].friends || [];
+      const senderFriends = userData[username].friends || [];
+
+      if (!targetFriends.includes(username)) targetFriends.push(username);
+      if (!senderFriends.includes(target)) senderFriends.push(target);
+
+      userData[target].friends = targetFriends;
+      userData[username].friends = senderFriends;
+
+      localStorage.setItem("userData", JSON.stringify(userData));
+      renderPeopleList();
+    }
+
     function renderPeopleList() {
       const search = document.getElementById("searchBox").value.toLowerCase();
       const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const current = localStorage.getItem("profileUsername");
       const peopleDiv = document.getElementById("peopleList");
 
       let html = "";
       for (const username in userData) {
+        if (username === current) continue;
         if (!username.toLowerCase().includes(search)) continue;
 
         const user = userData[username];
+        const isFriend = (userData[current]?.friends || []).includes(username);
+        const btn = isFriend ? `<span style="color: green;">(Friend)</span>` :
+          `<button onclick="event.stopPropagation(); sendFriendRequest('${username}')">Add Friend</button>`;
+
         html += `
-          <div class="section-box" style="text-align: left;">
+          <div class="section-box" style="text-align: left; cursor: pointer;" onclick="window.location.href='viewprofile.html?user=${username}'">
             <div style="display: flex; gap: 20px; align-items: center;">
               <img src="assets/images/default-avatar.png" alt="Avatar" class="avatar" style="width: 80px; height: 80px;">
               <div>
@@ -89,6 +110,7 @@
                   <strong>Bits:</strong> ${user.bits ?? 0} |
                   <strong>Friends:</strong> ${(user.friends ?? []).length}
                 </div>
+                <div style="margin-top: 8px;">${btn}</div>
               </div>
             </div>
           </div>
