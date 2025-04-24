@@ -46,93 +46,53 @@
     </footer>
   </div>
 
- <script>
-  function saveProfile() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+<script>
+  document.getElementById("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const userData = JSON.parse(localStorage.getItem("userData")) || {};
 
-    if (!username || !password) {
-      alert('Please fill in all fields.');
+    if (!userData[username]) {
+      alert("User not found.");
       return;
     }
 
-    let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-    let userData = JSON.parse(localStorage.getItem('userData')) || {};
+    const user = userData[username];
 
-if (users.includes(username)) {
-  if (userData[username] && userData[username].password === password) {
-    // 🩹 Patch old users with no Bits
-    if (userData[username].bits === undefined) {
-      userData[username].bits = 0;
-      localStorage.setItem('userData', JSON.stringify(userData));
+    // 🔒 Banned User Check
+    const now = Date.now();
+    if (user.isBanned) {
+      if (user.banExpires && now > user.banExpires) {
+        // Auto-unban if time passed
+        user.isBanned = false;
+        delete user.banReason;
+        delete user.banExpires;
+        localStorage.setItem("userData", JSON.stringify(userData));
+      } else {
+        let msg = "🚫 Your account has been banned.";
+        msg += "\n\nReason: " + (user.banReason || "No reason provided.");
+        if (user.banExpires) {
+          msg += "\nBan expires: " + new Date(user.banExpires).toLocaleString();
+        } else {
+          msg += "\nBan duration: Permanent";
+        }
+        alert(msg);
+        return;
+      }
     }
 
-    // Login success
-    localStorage.setItem('profileUsername', username);
-    localStorage.setItem('profileBio', userData[username].bio || '');
-    alert('Welcome back, ' + username + '!');
-    window.location.href = 'profile.html';
-  } else {
-    alert('Incorrect password for this username.');
-  }
-  return;
-}
+    if (user.password !== password) {
+      alert("Incorrect password.");
+      return;
+    }
 
-
-    // Create new account
-    users.push(username);
-    localStorage.setItem('registeredUsers', JSON.stringify(users));
-
-    userData[username] = {
-      password: password,
-      bio: "This is your default bio. You can edit it later.",
-      bits: 0 // 💰 Starting bits
-    };
-    localStorage.setItem('userData', JSON.stringify(userData));
-
-    localStorage.setItem('profileUsername', username);
-    localStorage.setItem('profileBio', userData[username].bio);
-
-    alert('Account created!');
-    window.location.href = 'profile.html';
-  }
-
-  function continueAsGuest() {
-    let guestCount = parseInt(localStorage.getItem('guestCount') || '0');
-    let users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-
-    let guestName;
-    do {
-      guestCount++;
-      guestName = "Guest " + guestCount;
-    } while (users.includes(guestName));
-
-    localStorage.setItem('guestCount', guestCount);
-    localStorage.setItem('profileUsername', guestName);
-    localStorage.setItem('profileBio', "I'm playing as a guest!");
-
-    alert("You're now playing as " + guestName);
-    window.location.href = 'profile.html';
-  }
-
-  function updateNavLinks() {
-    const username = localStorage.getItem('profileUsername');
-    const isAdmin = username === "Nova";
-    document.getElementById('loginLink').style.display = username ? 'none' : 'inline';
-    document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
-    const adminBtn = document.getElementById("adminBtn");
-    if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
-  }
-
-  function logout() {
-    localStorage.removeItem('profileUsername');
-    localStorage.removeItem('profileBio');
-    updateNavLinks();
-    window.location.href = 'login.html';
-  }
-
-  document.addEventListener('DOMContentLoaded', updateNavLinks);
+    localStorage.setItem("profileUsername", username);
+    localStorage.setItem("profileBio", user.bio || "");
+    window.location.href = "profile.html";
+  });
 </script>
+
 
 
 
