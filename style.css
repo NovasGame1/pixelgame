@@ -191,3 +191,32 @@ header nav {
   display: inline-block;
   vertical-align: middle;
 }
+
+.achievements-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 15px;
+}
+.ach-card {
+  width: 120px;
+  background: #fff;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  text-align: center;
+  padding: 10px;
+}
+.ach-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 8px;
+}
+.ach-info p {
+  margin: 4px 0 0;
+  font-size: 0.9em;
+  color: #555;
+}
+.locked .ach-icon {
+  opacity: 0.4;
+}
