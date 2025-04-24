@@ -2,141 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PixelGame - Games</title>
-
-  <link rel="icon" href="assets/images/logo.png" type="image/png">
-  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
-  <link rel="stylesheet" href="style.css">
-
+  <title>PixelGame – Games</title>
   <style>
-    .game-browser {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
-
-    .game-card {
-      background-color: white;
-      border: 1px solid #aaa;
-      padding: 15px;
-      width: 220px;
-      text-align: center;
-    }
-
-    .game-card img {
-      width: 100%;
-      height: 120px;
-      background-color: #ccc;
-      border: 1px solid #999;
-      margin-bottom: 10px;
-    }
-
-    .game-card h3 {
-      font-size: 1.2em;
-      margin: 10px 0 5px;
-    }
-
-    .game-card p {
-      font-size: 0.9em;
-      color: #666;
-    }
-
-    .game-card button {
-      margin-top: 10px;
+    body { margin: 0; overflow: hidden; }
+    #bitsDisplay {
+      position: fixed; top: 10px; right: 20px;
+      background: rgba(255,255,255,0.8);
+      padding: 6px 12px; border-radius: 8px;
+      font-weight: bold; z-index: 10;
     }
   </style>
 </head>
 <body>
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
 
-  <div class="page-wrapper">
-    <header>
-      <a href="index.html" class="site-logo-link">
-        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
-      </a>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="profile.html">Profile</a>
-        <a href="people.html">People</a>
-        <a href="shop.html">Shop</a>
-        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
-        <a href="login.html" id="loginLink">Login</a>
-        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
-      </nav>
-    </header>
-
-    <main>
-      <div class="section-box">
-        <h2>All Games</h2>
-        <div id="gamesContainer" class="game-browser">Loading games...</div>
-      </div>
-    </main>
-
-    <footer>
-      © 2025 PixelGame.
-    </footer>
-  </div>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js"></script>
+  <!-- OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/examples/js/controls/OrbitControls.js"></script>
 
   <script>
-    function logout() {
-      localStorage.removeItem("profileUsername");
-      localStorage.removeItem("profileBio");
-      updateNavLinks();
-      window.location.href = "login.html";
-    }
+    // 1) Boilerplate: scene, camera, renderer
+    const scene    = new THREE.Scene();
+    const camera   = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-    function updateNavLinks() {
-      const username = localStorage.getItem("profileUsername");
-      const isAdmin = username === "Nova";
-      document.getElementById("loginLink").style.display = username ? "none" : "inline";
-      document.getElementById("logoutLink").style.display = username ? "inline" : "none";
-      const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
-    }
+    // 2) OrbitControls for camera orbiting
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.target.set(8, 0.25, -20);
+    controls.update();
 
-    function updateBitsDisplay() {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const username = localStorage.getItem("profileUsername");
-      if (!username || !userData[username]) return;
-      const bits = userData[username].bits ?? 0;
-      document.getElementById("bitCountTop").innerText = bits;
-    }
+    // 3) Lights
+    scene.add(new THREE.AmbientLight(0x404040)); 
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    dir.position.set(5, 10, 5);
+    scene.add(dir);
 
-    function renderGames(games) {
-      const container = document.getElementById("gamesContainer");
-      container.innerHTML = "";
-
-      games.forEach(game => {
-        const div = document.createElement("div");
-        div.className = "game-card";
-        div.innerHTML = `
-          <img src="assets/images/game-placeholder.png" alt="${game.name}">
-          <h3>${game.name}</h3>
-          <p>Launch this experience</p>
-          <button onclick="launchGame('${game.name}')">Play</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function launchGame(gameName) {
-      // replace this with real launcher logic
-      location.href = `pixelgame://play/${gameName}`;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      updateNavLinks();
-      updateBitsDisplay();
-
-      fetch("https://NovasGame1.github.io/pixelgame/games/games.json")
-        .then(res => res.json())
-        .then(data => renderGames(data))
-        .catch(() => {
-          document.getElementById("gamesContainer").innerHTML = "<p>Failed to load games.</p>";
+    // 4) Load your JSON level file
+    fetch('NovaTest1.json')
+      .then(res => res.json())
+      .then(data => {
+        data.blocks.forEach(b => {
+          const geo = new THREE.BoxGeometry(b.sx, b.sy, b.sz);
+          const mat = new THREE.MeshLambertMaterial({ color: 0x00aa00 });
+          const mesh = new THREE.Mesh(geo, mat);
+          // Position at center of the block
+          mesh.position.set(
+            b.x + b.sx/2,
+            b.y + b.sy/2,
+            b.z + b.sz/2
+          );
+          scene.add(mesh);
         });
+
+        // Once blocks are in, position the camera to see them
+        camera.position.set(8, 8, -10);
+        camera.lookAt(8, 0, -20);
+      })
+      .catch(err => {
+        console.error('Failed to load JSON:', err);
+        alert('Error loading level data—check console.');
+      });
+
+    // 5) Handle resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // 6) Render loop
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // 7) Bits HUD (optional)
+    function updateBitsDisplay() {
+      const ud = JSON.parse(localStorage.getItem("userData")) || {};
+      const user = localStorage.getItem("profileUsername");
+      if (ud[user]) document.getElementById("bitCountTop").innerText = ud[user].bits || 0;
+    }
+    document.addEventListener('DOMContentLoaded', updateBitsDisplay);
   </script>
 </body>
 </html>
