@@ -22,6 +22,7 @@
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       position: relative;
+      text-align: center;
     }
     #maintenanceBanner {
       background: #ffeb3b; color: #000;
@@ -32,7 +33,6 @@
     .register-card h2 {
       margin-top: 0;
       color: #c42b1c;
-      text-align: center;
     }
     .register-card input[type="text"],
     .register-card input[type="password"] {
@@ -51,6 +51,15 @@
       background: none; border: none;
       cursor: pointer; font-size: 1.1em;
     }
+    .register-card .gender-group {
+      text-align: left;
+      margin: 12px 0;
+      font-size: 0.95em;
+    }
+    .gender-group label {
+      margin-right: 12px;
+      cursor: pointer;
+    }
     .register-card button.primary {
       width: 100%; padding: 10px;
       background-color: #c42b1c; color: #fff;
@@ -68,17 +77,6 @@
       font-size: 0.95em; cursor: pointer;
       margin-top: 8px;
     }
-    .register-card .links {
-      margin-top: 12px; font-size: 0.9em;
-      text-align: center;
-    }
-    .register-card .links a {
-      margin: 0 8px; color: #0066cc;
-      text-decoration: none;
-    }
-    .register-card .links a:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
 <body>
@@ -95,30 +93,35 @@
         <input type="password" id="regConfirm" placeholder="Confirm Password" required>
         <button type="button" id="toggleRegConfirm">👁️</button>
       </div>
+      <div class="gender-group">
+        <strong>Gender:</strong>
+        <label><input type="radio" name="gender" value="Male" required> Male</label>
+        <label><input type="radio" name="gender" value="Female"> Female</label>
+      </div>
       <button type="submit" class="primary" id="registerBtn">Register</button>
     </form>
+
     <button class="secondary" onclick="window.location.href='login.html'">Back to Login</button>
-    <div class="links">
-      <a href="#">Forgot Password?</a>
-    </div>
+    <button class="secondary" id="guestBtn">Play as Guest</button>
   </div>
 
   <script>
-    // Show maintenance banner & disable if set
+    // Maintenance banner
     const maintenance = localStorage.getItem("maintenanceMode")==="true";
     if (maintenance) {
       document.getElementById("maintenanceBanner").style.display = "block";
       document.getElementById("registerBtn").disabled = true;
+      document.getElementById("guestBtn").disabled = true;
     }
 
     // Toggle password visibility
     document.getElementById("toggleRegPass").onclick = () => {
       const f = document.getElementById("regPassword");
-      f.type = f.type==="password" ? "text" : "password";
+      f.type = f.type === "password" ? "text" : "password";
     };
     document.getElementById("toggleRegConfirm").onclick = () => {
       const f = document.getElementById("regConfirm");
-      f.type = f.type==="password" ? "text" : "password";
+      f.type = f.type === "password" ? "text" : "password";
     };
 
     // Registration logic
@@ -129,21 +132,19 @@
       const uname = document.getElementById("regUsername").value.trim();
       const pwd   = document.getElementById("regPassword").value;
       const conf  = document.getElementById("regConfirm").value;
+      const gender = document.querySelector('input[name="gender"]:checked').value;
       const data  = JSON.parse(localStorage.getItem("userData")) || {};
 
-      // Username exists?
       if (data[uname]) return alert("Username already exists.");
-
-      // Password match?
       if (pwd !== conf) return alert("Passwords do not match.");
 
-      // Create user object
       const now = Date.now();
       data[uname] = {
         password:    pwd,
         bio:         "",
         friends:     [],
         bits:        0,
+        gender:      gender,
         isAdmin:     false,
         isBanned:    false,
         banReason:   "",
@@ -157,9 +158,37 @@
         lastLogin:   now
       };
 
-      // Save and auto-login
       localStorage.setItem("userData", JSON.stringify(data));
       localStorage.setItem("profileUsername", uname);
+      localStorage.setItem("profileBio", "");
+      window.location.href = "profile.html";
+    });
+
+    // Guest login
+    document.getElementById("guestBtn").addEventListener("click", function() {
+      if (maintenance) return alert("Site under maintenance.");
+      const ud = JSON.parse(localStorage.getItem("userData")) || {};
+      let max = 0;
+      Object.keys(ud).forEach(name => {
+        const m = name.match(/^Guest (\d+)$/);
+        if (m) max = Math.max(max, parseInt(m[1]));
+      });
+      const guestName = "Guest " + (max + 1);
+      ud[guestName] = {
+        password:    "",
+        bio:         "",
+        friends:     [],
+        bits:        0,
+        gender:      "Unspecified",
+        isAdmin:     false,
+        isBanned:    false,
+        isLocked:    false,
+        isMuted:     false,
+        joinDate:    new Date().toLocaleDateString(),
+        lastLogin:   Date.now()
+      };
+      localStorage.setItem("userData", JSON.stringify(ud));
+      localStorage.setItem("profileUsername", guestName);
       localStorage.setItem("profileBio", "");
       window.location.href = "profile.html";
     });
