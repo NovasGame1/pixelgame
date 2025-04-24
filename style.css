@@ -173,3 +173,20 @@ footer {
   z-index: 1000;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 }
+
+
+.site-logo-link {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 20px;
+}
+
+.site-logo {
+  height: 40px; /* adjust as needed */
+  width: auto;
+}
+
+header nav {
+  display: inline-block;
+  vertical-align: middle;
+}
