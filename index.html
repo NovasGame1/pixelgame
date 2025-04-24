@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>PixelGame - Home</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- Favicon: your custom logo in the browser tab -->
-  <link rel="icon" href="assets/images/logo.png" type="image/png">
 
+  <!-- FAVICON (absolute path from web root) -->
+  <link rel="icon" href="/assets/images/logo.png" type="image/png">
+  <link rel="shortcut icon" href="/assets/images/logo.png" type="image/png">
+
+  <link rel="stylesheet" href="style.css">
   <style>
-    /* Bits HUD styling */
+    /* Bits HUD */
     #bitsDisplay {
       position: fixed;
       top: 10px;
@@ -21,15 +23,14 @@
       z-index: 1000;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
-
-    /* Header logo styling */
+    /* Header logo */
     .site-logo-link {
       display: inline-block;
       vertical-align: middle;
       margin-right: 20px;
     }
     .site-logo {
-      height: 40px; /* adjust as needed */
+      height: 40px;
       width: auto;
     }
     header nav {
@@ -39,16 +40,13 @@
   </style>
 </head>
 <body>
-  <!-- Bits HUD -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
 
   <div class="page-wrapper">
     <header>
-      <!-- Your custom logo -->
       <a href="index.html" class="site-logo-link">
         <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
       </a>
-
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
