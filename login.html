@@ -3,82 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <title>PixelGame – Login</title>
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
   <link rel="stylesheet" href="style.css">
-  <!-- optional: your favicon etc -->
+  <style>
+    .login-box {
+      max-width: 400px;
+      margin: 80px auto;
+      padding: 30px;
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+    .login-box h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      box-sizing: border-box;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 10px;
+      background: #c42b1c;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .login-box button:hover {
+      background: #a82317;
+    }
+  </style>
 </head>
 <body>
-  <div class="page-wrapper">
-    <header>
-      <a href="index.html"><img src="assets/images/logo.png" alt="PixelGame" class="site-logo"></a>
-    </header>
-
-    <main>
-      <h2>Log In</h2>
-      <form id="loginForm">
-        <div>
-          <label for="username">Username</label><br>
-          <input type="text" id="username" required>
-        </div>
-        <div>
-          <label for="password">Password</label><br>
-          <input type="password" id="password" required>
-        </div>
-        <button type="submit">Log In</button>
-      </form>
-    </main>
-
-    <footer>© 2025 PixelGame.</footer>
+  <div class="login-box">
+    <h2>PixelGame Login</h2>
+    <form id="loginForm">
+      <input id="username" type="text" placeholder="Username" required>
+      <input id="password" type="password" placeholder="Password" required>
+      <button type="submit">Log In</button>
+    </form>
   </div>
 
   <script>
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("loginForm");
+      form.addEventListener("submit", function(e) {
+        e.preventDefault();
 
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+        const userData = JSON.parse(localStorage.getItem("userData")) || {};
 
-      // 1) User exists?
-      if (!userData[username]) {
-        alert("User not found.");
-        return;
-      }
-      const user = userData[username];
-      const now  = Date.now();
-
-      // 2) Ban enforcement
-      if (user.isBanned) {
-        // auto-unban if expired
-        if (user.banExpires && now > user.banExpires) {
-          user.isBanned   = false;
-          delete user.banReason;
-          delete user.banExpires;
-          localStorage.setItem("userData", JSON.stringify(userData));
-        } else {
-          let msg = "🚫 You are banned from PixelGame.";
-          msg += "\n\nReason: " + (user.banReason || "No reason provided.");
-          if (user.banExpires) {
-            msg += "\n\nBan expires: " + new Date(user.banExpires).toLocaleString();
-          } else {
-            msg += "\n\nDuration: Permanent";
-          }
-          alert(msg);
+        // user must exist
+        if (!userData[username]) {
+          alert("🚫 User not found.");
           return;
         }
-      }
+        const user = userData[username];
+        const now = Date.now();
 
-      // 3) Password check
-      if (user.password !== password) {
-        alert("Incorrect password.");
-        return;
-      }
+        // —— BAN ENFORCEMENT ——
+        if (user.isBanned) {
+          // auto-unban if expired
+          if (user.banExpires && now > user.banExpires) {
+            user.isBanned = false;
+            delete user.banReason;
+            delete user.banExpires;
+            localStorage.setItem("userData", JSON.stringify(userData));
+          } else {
+            let msg = "🚫 You are banned from PixelGame.";
+            msg += "\n\nReason: " + (user.banReason || "No reason provided.");
+            if (user.banExpires) {
+              msg += "\nBan expires: " + new Date(user.banExpires).toLocaleString();
+            } else {
+              msg += "\nDuration: Permanent";
+            }
+            alert(msg);
+            return;
+          }
+        }
 
-      // 4) Success: record lastLogin & forward to profile
-      user.lastLogin = now;
-      localStorage.setItem("userData", JSON.stringify(userData));
-      localStorage.setItem("profileUsername", username);
-      localStorage.setItem("profileBio", user.bio || "");
-      window.location.href = "profile.html";
+        // —— PASSWORD CHECK ——
+        if (user.password !== password) {
+          alert("🚫 Incorrect password.");
+          return;
+        }
+
+        // —— SUCCESSFUL LOGIN ——
+        user.lastLogin = now;
+        localStorage.setItem("userData", JSON.stringify(userData));
+        localStorage.setItem("profileUsername", username);
+        localStorage.setItem("profileBio", user.bio || "");
+        window.location.href = "profile.html";
+      });
     });
   </script>
 </body>
