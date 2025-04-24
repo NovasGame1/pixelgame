@@ -2,103 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PixelGame - Login</title>
+  <title>PixelGame – Login</title>
   <link rel="stylesheet" href="style.css">
+  <!-- optional: your favicon etc -->
 </head>
 <body>
   <div class="page-wrapper">
     <header>
-      <h1>PixelGame</h1>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="profile.html">Your Profile</a>
-        <a href="people.html">People</a>
-                <a href="shop.html">Shop</a>
-        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
-        <a href="login.html" id="loginLink">Login</a>
-        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
-      </nav>
+      <a href="index.html"><img src="assets/images/logo.png" alt="PixelGame" class="site-logo"></a>
     </header>
 
     <main>
-      <div class="section-box">
-        <h2>Log In / Sign Up</h2>
-
-        <form onsubmit="saveProfile(); return false;">
-          <label for="username">Username:</label><br>
-          <input type="text" id="username" placeholder="Enter your username" required><br><br>
-
-          <label for="password">Password:</label><br>
-          <input type="password" id="password" placeholder="Enter your password" required><br><br>
-
-          <button type="submit">Create Account / Log In</button>
-        </form>
-
-        <hr style="margin: 30px 0;">
-
-        <button onclick="continueAsGuest()">Continue as Guest</button>
-      </div>
+      <h2>Log In</h2>
+      <form id="loginForm">
+        <div>
+          <label for="username">Username</label><br>
+          <input type="text" id="username" required>
+        </div>
+        <div>
+          <label for="password">Password</label><br>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit">Log In</button>
+      </form>
     </main>
 
-    <footer>
-      © 2025 PixelGame.
-    </footer>
+    <footer>© 2025 PixelGame.</footer>
   </div>
 
-<script>
-document.getElementById("loginForm").addEventListener("submit", function(e) {
-  e.preventDefault();
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value;
-  const userData = JSON.parse(localStorage.getItem("userData")) || {};
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
 
-  if (!userData[username]) {
-    return alert("User not found.");
-  }
-  const user = userData[username];
-  const now  = Date.now();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
 
-  // —— BAN ENFORCEMENT ——
-  if (user.isBanned) {
-    if (user.banExpires && now > user.banExpires) {
-      // Auto-unban expired temp bans
-      user.isBanned   = false;
-      delete user.banReason;
-      delete user.banExpires;
-      localStorage.setItem("userData", JSON.stringify(userData));
-    } else {
-      let msg = "🚫 You are banned from PixelGame.";
-      msg += "\n\nReason: " + (user.banReason || "No reason provided.");
-      if (user.banExpires) {
-        msg += "\nBan expires: " + new Date(user.banExpires).toLocaleString();
-      } else {
-        msg += "\nDuration: Permanent";
+      // 1) User exists?
+      if (!userData[username]) {
+        alert("User not found.");
+        return;
       }
-      return alert(msg);
-    }
-  }
+      const user = userData[username];
+      const now  = Date.now();
 
-  // —— PASSWORD CHECK ——
-  if (user.password !== password) {
-    return alert("Incorrect password.");
-  }
+      // 2) Ban enforcement
+      if (user.isBanned) {
+        // auto-unban if expired
+        if (user.banExpires && now > user.banExpires) {
+          user.isBanned   = false;
+          delete user.banReason;
+          delete user.banExpires;
+          localStorage.setItem("userData", JSON.stringify(userData));
+        } else {
+          let msg = "🚫 You are banned from PixelGame.";
+          msg += "\n\nReason: " + (user.banReason || "No reason provided.");
+          if (user.banExpires) {
+            msg += "\n\nBan expires: " + new Date(user.banExpires).toLocaleString();
+          } else {
+            msg += "\n\nDuration: Permanent";
+          }
+          alert(msg);
+          return;
+        }
+      }
 
-  // —— SUCCESSFUL LOGIN ——
-  user.lastLogin = now;
-  localStorage.setItem("userData", JSON.stringify(userData));
-  localStorage.setItem("profileUsername", username);
-  localStorage.setItem("profileBio", user.bio || "");
-  window.location.href = "profile.html";
-});
-</script>
+      // 3) Password check
+      if (user.password !== password) {
+        alert("Incorrect password.");
+        return;
+      }
 
-
-
-
-
-
-
-  
+      // 4) Success: record lastLogin & forward to profile
+      user.lastLogin = now;
+      localStorage.setItem("userData", JSON.stringify(userData));
+      localStorage.setItem("profileUsername", username);
+      localStorage.setItem("profileBio", user.bio || "");
+      window.location.href = "profile.html";
+    });
+  </script>
 </body>
 </html>
