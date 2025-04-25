@@ -1,160 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>PixelGame – Games</title>
-  <link rel="icon" href="assets/images/logo.png" type="image/png">
-  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
-  <link rel="stylesheet" href="style.css">
+<script>
+  // HUD & nav updates (unchanged)
+  function updateBitsDisplay() {
+    const ud = JSON.parse(localStorage.getItem("userData")) || {};
+    const u  = localStorage.getItem("profileUsername");
+    if (ud[u]) document.getElementById("bitCountTop").innerText = ud[u].bits || 0;
+  }
+  function updateNavLinks() {
+    const u = localStorage.getItem("profileUsername");
+    document.getElementById("loginLink").style.display  = u ? "none" : "inline";
+    document.getElementById("logoutLink").style.display = u ? "inline" : "none";
+    document.getElementById("adminBtn").style.display   = (u === "Nova") ? "inline" : "none";
+  }
+  function logout() {
+    localStorage.removeItem("profileUsername");
+    window.location.href = "login.html";
+  }
 
-  <style>
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
-      gap: 20px;
-      margin: 30px 0;
-    }
-    .game-card {
-      background: #fff;
-      border: 2px solid #ccc;
-      border-radius: 6px;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-      display: flex;
-      flex-direction: column;
-      transition: transform .1s, box-shadow .1s;
-    }
-    .game-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 4px 4px 10px rgba(0,0,0,0.3);
-    }
-    .game-thumb {
-      background: linear-gradient(135deg, #e0e0e0, #cccccc);
-      height: 120px;
-    }
-    .game-info {
-      padding: 10px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .game-info h3 {
-      margin: 0 0 8px;
-      font-size: 1.1em;
-      color: #c42b1c;
-    }
-    .game-info p {
-      margin: 0 0 12px;
-      flex: 1;
-      font-size: 0.9em;
-      color: #555;
-    }
-    .game-info button {
-      align-self: flex-end;
-      padding: 6px 12px;
-      background: #c42b1c;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9em;
-    }
-    .game-info button:hover {
-      background: #a82317;
-    }
-  </style>
-</head>
-<body>
-  <!-- Bits & Nav HUD (unchanged) -->
-  <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
-  <div class="page-wrapper">
-    <header>
-      <a href="index.html" class="site-logo-link">
-        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
-      </a>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="profile.html">Profile</a>
-        <a href="people.html">People</a>
-        <a href="shop.html">Shop</a>
-        <a href="admin.html" id="adminBtn" style="display:none;">Admin Panel</a>
-        <a href="login.html" id="loginLink">Login</a>
-        <a href="#" id="logoutLink" style="display:none;" onclick="logout()">Logout</a>
-      </nav>
-    </header>
+  // 1) Fetch all game folders under 'gamesfolder' on GitHub
+  async function loadGames() {
+    const apiUrl = "https://api.github.com/repos/NovasGame1/pixelgame/contents/gamesfolder?ref=main";
+    const container = document.getElementById("gamesContainer");
+    container.innerHTML = ""; 
 
-    <main>
-      <h1 style="margin-top:20px;">Games</h1>
-      <div id="gamesContainer" class="games-grid">
-        <!-- game cards injected here -->
-      </div>
-    </main>
+    try {
+      const res  = await fetch(apiUrl);
+      const dirs = await res.json();
 
-    <footer>© 2025 PixelGame.</footer>
-  </div>
+      for (const dir of dirs) {
+        if (dir.type !== "dir") continue;
 
-  <script>
-    // HUD & Nav
-    function updateBitsDisplay() {
-      const ud = JSON.parse(localStorage.getItem("userData")) || {};
-      const u  = localStorage.getItem("profileUsername");
-      if (ud[u]) document.getElementById("bitCountTop").innerText = ud[u].bits || 0;
-    }
-    function updateNavLinks() {
-      const u = localStorage.getItem("profileUsername");
-      document.getElementById("loginLink").style.display  = u ? "none" : "inline";
-      document.getElementById("logoutLink").style.display = u ? "inline" : "none";
-      document.getElementById("adminBtn").style.display   = (u === "Nova") ? "inline" : "none";
-    }
-    function logout() {
-      localStorage.removeItem("profileUsername");
-      window.location.href = "login.html";
-    }
+        // 2) Get the JSON file inside each folder
+        const folderRes = await fetch(dir.url);
+        const files     = await folderRes.json();
+        const jsonFile  = files.find(f => f.name.endsWith(".json"));
+        if (!jsonFile) continue;
 
-    // 1) List all subfolders of gamesfolder via GitHub API
-    async function loadGames() {
-      const apiUrl = "https://api.github.com/repos/NovasGame1/pixelgame/contents/gamesfolder?ref=main";
-      const container = document.getElementById("gamesContainer");
-      container.innerHTML = "";
-      try {
-        const res  = await fetch(apiUrl);
-        const dirs = await res.json();
-        for (const dir of dirs) {
-          if (dir.type !== "dir") continue;
-          // 2) In each folder, find the .json
-          const folderRes = await fetch(dir.url);
-          const files     = await folderRes.json();
-          const jsonFile  = files.find(f => f.name.endsWith(".json"));
-          if (!jsonFile) continue;
-          // 3) Fetch the game JSON to read metadata
-          const metaRes   = await fetch(jsonFile.download_url);
-          const game      = await metaRes.json();
-          // 4) Create the card
-          const card = document.createElement("div");
-          card.className = "game-card";
-          card.innerHTML = `
-            <div class="game-thumb"></div>
-            <div class="game-info">
-              <h3>${game.name}</h3>
-              <p>${game.description}</p>
-              <button>Play</button>
-            </div>`;
-          card.querySelector("button").onclick = () => {
+        // 3) Download the JSON to read its metadata
+        const metaRes = await fetch(jsonFile.download_url);
+        const game    = await metaRes.json();
+
+        // 4) Build the retro-Roblox card
+        const card = document.createElement("div");
+        card.className = "game-card";
+        card.innerHTML = `
+          <div class="game-thumb"></div>
+          <div class="game-info">
+            <h3>${game.name}</h3>
+            <p>${game.description}</p>
+            <button>Play</button>
+          </div>`;
+
+        // 5) Wire up Play button to protocol first, then fallback
+        card.querySelector("button").onclick = () => {
+          // URL-encode the raw GitHub URL to our JSON
+          const rawUrl = encodeURIComponent(jsonFile.download_url);
+
+          // 1️⃣ Attempt to open in desktop PixelGame Player
+          window.location.href = `pixelgame://load?level=${rawUrl}`;
+
+          // 2️⃣ Fallback to web player after 500ms
+          setTimeout(() => {
             window.location.href = `player.html?level=gamesfolder/${dir.name}/${jsonFile.name}`;
-          };
-          container.appendChild(card);
-        }
-      } catch (err) {
-        console.error("Failed to load games:", err);
-        container.innerHTML = "<p style='color:red;'>Unable to load games.</p>";
-      }
-    }
+          }, 500);
+        };
 
-    document.addEventListener("DOMContentLoaded", () => {
-      updateNavLinks();
-      updateBitsDisplay();
-      loadGames();
-    });
-  </script>
-</body>
-</html>
+        container.appendChild(card);
+      }
+    } catch (err) {
+      console.error("Failed to load games:", err);
+      container.innerHTML = "<p style='color:red;'>Unable to load games.</p>";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    updateNavLinks();
+    updateBitsDisplay();
+    loadGames();
+  });
+</script>
