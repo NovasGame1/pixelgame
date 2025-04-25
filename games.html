@@ -111,7 +111,7 @@
       window.location.href = "login.html";
     }
 
-    // Load all games from GitHub folder and render cards
+    // Fetch and render all games from each subfolder in gamesfolder/
     async function loadGames() {
       const apiUrl = "https://api.github.com/repos/NovasGame1/pixelgame/contents/gamesfolder?ref=main";
       const container = document.getElementById("gamesContainer");
@@ -125,12 +125,9 @@
           const files     = await folderRes.json();
           const jsonFile  = files.find(f => f.name.endsWith(".json"));
           if (!jsonFile) continue;
+          const metaRes   = await fetch(jsonFile.download_url);
+          const game      = await metaRes.json();
 
-          // fetch metadata
-          const metaRes = await fetch(jsonFile.download_url);
-          const game    = await metaRes.json();
-
-          // build card
           const card = document.createElement("div");
           card.className = "game-card";
           card.innerHTML = `
@@ -140,14 +137,13 @@
               <p>${game.description}</p>
               <button>Play</button>
             </div>`;
-          
-          // Play via pixelgame:// protocol
-          const rawUrl = jsonFile.download_url;
-          const encoded = encodeURIComponent(rawUrl);
+          // ✅ Open player.html in new 960×600 window
           card.querySelector("button").onclick = () => {
-            window.location.href = `pixelgame://${encoded}`;
+            const level = `gamesfolder/${dir.name}/${jsonFile.name}`;
+            const url = new URL("player.html", window.location.href);
+            url.searchParams.set("level", level);
+            window.open(url.href, "_blank", "width=960,height=600");
           };
-
           container.appendChild(card);
         }
       } catch (err) {
