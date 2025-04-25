@@ -64,7 +64,7 @@
   </style>
 </head>
 <body>
-  <!-- Bits & Nav HUD (unchanged) -->
+  <!-- Bits & Nav HUD -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
   <div class="page-wrapper">
     <header>
@@ -111,7 +111,7 @@
       window.location.href = "login.html";
     }
 
-    // 1) List all subfolders of gamesfolder via GitHub API
+    // Load all games from GitHub folder and render cards
     async function loadGames() {
       const apiUrl = "https://api.github.com/repos/NovasGame1/pixelgame/contents/gamesfolder?ref=main";
       const container = document.getElementById("gamesContainer");
@@ -121,15 +121,16 @@
         const dirs = await res.json();
         for (const dir of dirs) {
           if (dir.type !== "dir") continue;
-          // 2) In each folder, find the .json
           const folderRes = await fetch(dir.url);
           const files     = await folderRes.json();
           const jsonFile  = files.find(f => f.name.endsWith(".json"));
           if (!jsonFile) continue;
-          // 3) Fetch the game JSON to read metadata
-          const metaRes   = await fetch(jsonFile.download_url);
-          const game      = await metaRes.json();
-          // 4) Create the card
+
+          // fetch metadata
+          const metaRes = await fetch(jsonFile.download_url);
+          const game    = await metaRes.json();
+
+          // build card
           const card = document.createElement("div");
           card.className = "game-card";
           card.innerHTML = `
@@ -139,9 +140,14 @@
               <p>${game.description}</p>
               <button>Play</button>
             </div>`;
+          
+          // Play via pixelgame:// protocol
+          const rawUrl = jsonFile.download_url;
+          const encoded = encodeURIComponent(rawUrl);
           card.querySelector("button").onclick = () => {
-            window.location.href = `player.html?level=gamesfolder/${dir.name}/${jsonFile.name}`;
+            window.location.href = `pixelgame://${encoded}`;
           };
+
           container.appendChild(card);
         }
       } catch (err) {
