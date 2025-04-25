@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PixelGame Player</title>
+  <script src="Build/UnityLoader.js"></script>
+  <style>body,html{margin:0;padding:0;overflow:hidden;}#unityContainer{width:100%;height:100vh;}</style>
+</head>
+<body>
+  <div id="unityContainer"></div>
+  <script>
+    // 1) Instantiate the Unity WebGL player
+    var gameInstance = UnityLoader.instantiate(
+      "unityContainer",
+      "Build/PixelGamePlayer.json",
+      { onProgress: UnityProgress }
+    );
+
+    // 2) When loaded, read the URL query for ?level=gamesfolder/slug/file.json
+    function getLevelURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("level");
+    }
+
+    // 3) After a short delay (when Unity is ready), call into the GameManager
+    gameInstance.Module.onRuntimeInitialized = function() {
+      const levelURL = getLevelURL();
+      if (levelURL) {
+        // call the C# method: GameManager.LoadLevelFromURL(string)
+        gameInstance.SendMessage("GameManager", "LoadLevelFromURL", levelURL);
+      } else {
+        alert("No level specified!");
+      }
+    };
+  </script>
+</body>
+</html>
