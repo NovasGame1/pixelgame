@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <title>PixelGame – Games</title>
   <link rel="icon" href="assets/images/logo.png" type="image/png">
-  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
   <link rel="stylesheet" href="style.css">
-
   <style>
     /* Retro-Roblox grid */
     .games-grid {
@@ -67,20 +65,18 @@
   </style>
 </head>
 <body>
-  <!-- Bits & Nav HUD (unchanged) -->
+  <!-- Bits & Nav HUD -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
   <div class="page-wrapper">
     <header>
-      <a href="index.html" class="site-logo-link">
-        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
-      </a>
+      <a href="index.html"><img src="assets/images/logo.png" alt="PixelGame" class="site-logo"></a>
       <nav>
         <a href="index.html">Home</a>
         <a href="games.html">Games</a>
         <a href="profile.html">Profile</a>
         <a href="people.html">People</a>
         <a href="shop.html">Shop</a>
-        <a href="admin.html" id="adminBtn" style="display:none;">Admin Panel</a>
+        <a href="admin.html" id="adminBtn" style="display:none;">Admin</a>
         <a href="login.html" id="loginLink">Login</a>
         <a href="#" id="logoutLink" style="display:none;" onclick="logout()">Logout</a>
       </nav>
@@ -89,7 +85,7 @@
     <main>
       <h1 style="margin-top:20px;">Games</h1>
       <div id="gamesContainer" class="games-grid">
-        <!-- game cards get injected here -->
+        <!-- auto-generated game cards -->
       </div>
     </main>
 
@@ -97,49 +93,69 @@
   </div>
 
   <script>
-    // HUD & nav (as before)…
+    // HUD & nav
     function updateBitsDisplay() {
-      const data = JSON.parse(localStorage.getItem("userData")) || {};
-      const user = localStorage.getItem("profileUsername");
-      if (data[user]) document.getElementById("bitCountTop").innerText = data[user].bits || 0;
+      const ud = JSON.parse(localStorage.getItem("userData")) || {};
+      const me = localStorage.getItem("profileUsername");
+      if (ud[me]) document.getElementById("bitCountTop").innerText = ud[me].bits || 0;
     }
     function updateNavLinks() {
-      const u = localStorage.getItem("profileUsername");
-      document.getElementById("loginLink").style.display = u ? "none" : "inline";
-      document.getElementById("logoutLink").style.display = u ? "inline" : "none";
-      document.getElementById("adminBtn").style.display = (u === "Nova") ? "inline" : "none";
+      const me = localStorage.getItem("profileUsername");
+      document.getElementById("loginLink").style.display = me ? "none" : "inline";
+      document.getElementById("logoutLink").style.display = me ? "inline" : "none";
+      document.getElementById("adminBtn").style.display = (me === "Nova") ? "inline" : "none";
     }
     function logout() {
       localStorage.removeItem("profileUsername");
       window.location.href = "login.html";
     }
 
-    // 1) Fetch manifest and build cards
+    // 1) List directory via GitHub API
     async function loadGames() {
+      const apiUrl = 
+        "https://api.github.com/repos/NovasGame1/pixelgame/contents/Export/gamesfolder";
       try {
-        const res = await fetch("gamesfolder/games.json");
-        const games = await res.json();
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error(res.statusText);
+        const files = await res.json();
         const container = document.getElementById("gamesContainer");
         container.innerHTML = "";
-        games.forEach(g => {
-          const card = document.createElement("div");
-          card.className = "game-card";
-          card.innerHTML = `
-            <div class="game-thumb"></div>
-            <div class="game-info">
-              <h3>${g.name}</h3>
-              <p>${g.description}</p>
-              <button>Play</button>
-            </div>`;
-          card.querySelector("button").onclick = () => {
-            // adjust path if needed:
-            window.location.href = `player.html?level=gamesfolder/${g.file}`;
-          };
-          container.appendChild(card);
-        });
+
+        // filter for .json files
+        const jsonFiles = files.filter(f => f.name.endsWith(".json"));
+
+        // for each JSON, fetch its contents and render a card
+        for (const f of jsonFiles) {
+          const rawUrl = 
+            `https://raw.githubusercontent.com/NovasGame1/pixelgame/main/Export/gamesfolder/${f.name}`;
+          try {
+            const fileRes = await fetch(rawUrl);
+            const game = await fileRes.json();
+            const card = document.createElement("div");
+            card.className = "game-card";
+            card.innerHTML = `
+              <div class="game-thumb"></div>
+              <div class="game-info">
+                <h3>${game.name}</h3>
+                <p>${game.description}</p>
+                <button>Play</button>
+              </div>`;
+            card.querySelector("button").onclick = () => {
+              window.location.href = `player.html?level=Export/gamesfolder/${encodeURIComponent(f.name)}`;
+            };
+            container.appendChild(card);
+          } catch(err) {
+            console.warn("Failed to load", f.name, err);
+          }
+        }
+
+        if (jsonFiles.length === 0) {
+          container.innerHTML = "<p>No games found in your gamesfolder.</p>";
+        }
       } catch (err) {
-        console.error("Failed to load games.json:", err);
-        document.getElementById("gamesContainer").innerHTML = "<p style='color:red;'>Could not load games.</p>";
+        console.error("Could not list games:", err);
+        document.getElementById("gamesContainer")
+          .innerHTML = "<p style='color:red;'>Failed to load games.</p>";
       }
     }
 
