@@ -63,7 +63,6 @@
   </style>
 </head>
 <body>
-  <!-- Bits & Nav HUD -->
   <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
   <div class="page-wrapper">
     <header>
@@ -93,7 +92,6 @@
   </div>
 
   <script>
-    // HUD & Nav
     function updateBitsDisplay() {
       const ud = JSON.parse(localStorage.getItem("userData")) || {};
       const u  = localStorage.getItem("profileUsername");
@@ -110,7 +108,6 @@
       window.location.href = "login.html";
     }
 
-    // Fetch and render all games from each subfolder in gamesfolder/
     async function loadGames() {
       const apiUrl = "https://api.github.com/repos/NovasGame1/pixelgame/contents/gamesfolder?ref=main";
       const container = document.getElementById("gamesContainer");
@@ -137,15 +134,11 @@
               <button>Play</button>
             </div>`;
           card.querySelector("button").onclick = () => {
+            // Simply open the WebGL player – no local server calls
             const level = `gamesfolder/${dir.name}/${jsonFile.name}`;
-            // 1) Try Desktop Player via localhost HTTP
-            fetch(`http://localhost:52876/?level=${encodeURIComponent(level)}`)
-              .catch(() => {
-                // 2) Fallback to WebGL player
-                const url = new URL("player.html", window.location.href);
-                url.searchParams.set("level", level);
-                window.open(url.href, "_blank", "width=960,height=600");
-              });
+            const url   = new URL("player.html", window.location.href);
+            url.searchParams.set("level", level);
+            window.open(url.href, "_blank", "width=960,height=600");
           };
           container.appendChild(card);
         }
