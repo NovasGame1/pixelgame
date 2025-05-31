@@ -1,131 +1,182 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | PixelGamePlayer</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
-  </head>
-  <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PixelGame – Home</title>
+  <!-- Favicon / Tab Icon -->
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ---------- HOME PAGE SPECIFIC STYLES ---------- */
+
+    .welcome-banner {
+      background-color: #fff;
+      border: 1px solid #aaa;
+      padding: 25px;
+      margin-bottom: 30px;
+      text-align: center;
+      font-size: 1.2em;
+    }
+
+    .friends-section {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .friends-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .friend-card {
+      width: 120px;
+      background: #fff;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .1s, box-shadow .1s;
+    }
+    .friend-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    }
+    .friend-card img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 1px solid #999;
+      margin-bottom: 8px;
+    }
+    .friend-card .friend-name {
+      font-size: 0.95em;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <!-- Bits HUD -->
+  <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
+
+  <div class="page-wrapper">
+    <header>
+      <a href="index.html" class="site-logo-link">
+        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
+      </a>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="profile.html">Profile</a>
+        <a href="people.html">People</a>
+        <a href="shop.html">Shop</a>
+        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Welcome Banner -->
+      <div class="welcome-banner">
+        <h2>Welcome to PixelGame!</h2>
+        <p>Create, play, and share pixel-based 3D worlds. Click “Games” to see what’s new, or head to your “Profile” to update your bio.</p>
+      </div>
+
+      <!-- Your Friends Section -->
+      <div class="section-box friends-section">
+        <h2>Your Friends</h2>
+        <div id="friendsContainer" class="friends-grid">
+          <!-- Friend cards get injected here -->
         </div>
+        <p id="noFriendsMsg" style="color: #555; margin-top: 15px; display: none;">
+          You don’t have any friends yet. Visit “People” to find and add players!
+        </p>
       </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-webgl-logo"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">PixelGamePlayer</div>
+
+      <!-- Featured Game Placeholder -->
+      <div class="section-box">
+        <h2>Featured Game</h2>
+        <p>Stay tuned for our pick of the day!</p>
+        <button onclick="alert('Featured games coming soon!')">Coming Soon</button>
       </div>
-    </div>
-    <script>
+    </main>
 
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
+    <footer>
+      © 2025 PixelGame.
+    </footer>
+  </div>
 
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-      function unityShowBanner(msg, type) {
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-        }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
+  <script>
+    function logout() {
+      localStorage.removeItem('profileUsername');
+      localStorage.removeItem('profileBio');
+      updateNavLinks();
+      window.location.href = 'login.html';
+    }
+
+    function updateNavLinks() {
+      const username = localStorage.getItem('profileUsername');
+      const isAdmin = username === "Nova";
+      document.getElementById('loginLink').style.display  = username ? 'none' : 'inline';
+      document.getElementById('logoutLink').style.display = username ? 'inline' : 'none';
+      const adminBtn = document.getElementById("adminBtn");
+      if (adminBtn) adminBtn.style.display = isAdmin ? 'inline' : 'none';
+    }
+
+    function updateBitsDisplay() {
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      if (!username || !userData[username]) return;
+      const bits = userData[username].bits ?? 0;
+      document.getElementById("bitCountTop").innerText = bits;
+    }
+
+    function renderFriends() {
+      const container = document.getElementById("friendsContainer");
+      const noMsg     = document.getElementById("noFriendsMsg");
+      container.innerHTML = "";
+
+      const userData = JSON.parse(localStorage.getItem("userData")) || {};
+      const username = localStorage.getItem("profileUsername");
+      if (!username || !userData[username]) {
+        // Not logged in – no friends to show
+        noMsg.style.display = 'block';
+        return;
       }
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/PixelGame Player.loader.js";
-      var config = {
-        dataUrl: buildUrl + "/PixelGame Player.data",
-        frameworkUrl: buildUrl + "/PixelGame Player.framework.js",
-        codeUrl: buildUrl + "/PixelGame Player.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "PixelGamePlayer",
-        productVersion: "0.1",
-        showBanner: unityShowBanner,
-      };
-
-      // By default, Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
-
-      // If you would like all file writes inside Unity Application.persistentDataPath
-      // directory to automatically persist so that the contents are remembered when
-      // the user revisits the site the next time, uncomment the following line:
-      // config.autoSyncPersistentDataPath = true;
-      // This autosyncing is currently not the default behavior to avoid regressing
-      // existing user projects that might rely on the earlier manual
-      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
-      // expected to change.
-
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-        container.className = "unity-mobile";
-        canvas.className = "unity-mobile";
-
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
-
-
-      } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
+      const friendsList = userData[username].friends || [];
+      if (friendsList.length === 0) {
+        noMsg.style.display = 'block';
+        return;
       }
+      noMsg.style.display = 'none';
 
-      loadingBar.style.display = "block";
+      friendsList.forEach(friendName => {
+        // Create a card for each friend
+        const card = document.createElement("div");
+        card.className = "friend-card";
+        card.onclick = () => {
+          window.location.href = `viewprofile.html?user=${encodeURIComponent(friendName)}`;
+        };
+        card.innerHTML = `
+          <img src="assets/images/default-avatar.png" alt="${friendName}">
+          <div class="friend-name">${friendName}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
 
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                loadingBar.style.display = "none";
-                fullscreenButton.onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
-              }).catch((message) => {
-                alert(message);
-              });
-            };
-
-      document.body.appendChild(script);
-
-    </script>
-  </body>
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavLinks();
+      updateBitsDisplay();
+      renderFriends();
+    });
+  </script>
+</body>
 </html>
