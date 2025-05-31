@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>PixelGame – Games</title>
   <link rel="icon" href="assets/images/logo.png" type="image/png">
-  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
   <link rel="stylesheet" href="style.css">
 
   <style>
@@ -137,19 +136,24 @@
               <p>${game.description}</p>
               <button>Play</button>
             </div>`;
-          // ✅ Open player.html in new 960×600 window
-card.querySelector("button").onclick = () => {
-  const level = `gamesfolder/${dir.name}/${jsonFile.name}`;
-  // 1) Try to wake up the local server
-  fetch(`http://localhost:52876/?level=${encodeURIComponent(level)}`)
-    .catch(() => {
-      // 2) If it fails (server not running), fallback to WebGL player
-      const url = new URL("player.html", window.location.href);
-      url.searchParams.set("level", level);
-      window.open(url.href, "_blank", "width=960,height=600");
-    });
-};
-
+          card.querySelector("button").onclick = () => {
+            const level = `gamesfolder/${dir.name}/${jsonFile.name}`;
+            // 1) Try Desktop Player via localhost HTTP
+            fetch(`http://localhost:52876/?level=${encodeURIComponent(level)}`)
+              .catch(() => {
+                // 2) Fallback to WebGL player
+                const url = new URL("player.html", window.location.href);
+                url.searchParams.set("level", level);
+                window.open(url.href, "_blank", "width=960,height=600");
+              });
+          };
+          container.appendChild(card);
+        }
+      } catch (err) {
+        console.error("Failed to load games:", err);
+        container.innerHTML = "<p style='color:red;'>Unable to load games.</p>";
+      }
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
       updateNavLinks();
