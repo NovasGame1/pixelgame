@@ -1,154 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>PixelGame - Home</title>
-
-  <link rel="icon" href="assets/images/logo.png" type="image/png">
-  <link rel="shortcut icon" href="assets/images/logo.png" type="image/png">
-  <link rel="stylesheet" href="style.css">
-
-  <style>
-    .home-banner {
-      background: #fff;
-      border: 1px solid #aaa;
-      padding: 25px;
-      margin-bottom: 30px;
-      text-align: center;
-    }
-
-    .home-banner h2 {
-      font-size: 2em;
-      margin-bottom: 15px;
-    }
-
-    .friends-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
-
-    .friend-card {
-      width: 100px;
-      text-align: center;
-      background: #fff;
-      border: 1px solid #aaa;
-      padding: 10px;
-    }
-
-    .friend-card img {
-      width: 80px;
-      height: 80px;
-      border: 1px solid #ccc;
-      margin-bottom: 5px;
-    }
-
-    .friend-card .username {
-      font-size: 0.95em;
-    }
-  </style>
-</head>
-<body>
-  <!-- Bits HUD -->
-  <div id="bitsDisplay">Bits: <span id="bitCountTop">0</span></div>
-
-  <div class="page-wrapper">
-    <header>
-      <a href="index.html" class="site-logo-link">
-        <img src="assets/images/logo.png" alt="PixelGame" class="site-logo">
-      </a>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="profile.html">Profile</a>
-        <a href="people.html">People</a>
-        <a href="shop.html">Shop</a>
-        <a href="admin.html" id="adminBtn" style="display: none;">Admin Panel</a>
-        <a href="login.html" id="loginLink">Login</a>
-        <a href="#" id="logoutLink" style="display: none;" onclick="logout()">Logout</a>
-      </nav>
-    </header>
-
-    <main>
-      <div class="home-banner">
-        <h2>Welcome to PixelGame!</h2>
-        <p>Build, play, and connect with other players in a world full of imagination and nostalgia.</p>
-        <button onclick="window.location.href='games.html'">Play Games</button>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | PixelGamePlayer</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+  </head>
+  <body>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
       </div>
-
-      <div class="section-box">
-        <h2>Your Friends</h2>
-        <div id="friendsList" class="friends-list">Loading friends...</div>
+      <div id="unity-warning"> </div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">PixelGamePlayer</div>
       </div>
-    </main>
+    </div>
+    <script>
 
-    <footer>
-      © 2025 PixelGame.
-    </footer>
-  </div>
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
 
-  <script>
-    function logout() {
-      localStorage.removeItem("profileUsername");
-      localStorage.removeItem("profileBio");
-      updateNavLinks();
-      window.location.href = "login.html";
-    }
-
-    function updateNavLinks() {
-      const username = localStorage.getItem("profileUsername");
-      const isAdmin = username === "Nova";
-      document.getElementById("loginLink").style.display = username ? "none" : "inline";
-      document.getElementById("logoutLink").style.display = username ? "inline" : "none";
-      const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.style.display = isAdmin ? "inline" : "none";
-    }
-
-    function updateBitsDisplay() {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const username = localStorage.getItem("profileUsername");
-      if (!username || !userData[username]) return;
-      const bits = userData[username].bits ?? 0;
-      document.getElementById("bitCountTop").innerText = bits;
-    }
-
-    function renderFriends() {
-      const userData = JSON.parse(localStorage.getItem("userData")) || {};
-      const username = localStorage.getItem("profileUsername");
-      const container = document.getElementById("friendsList");
-
-      if (!username || !userData[username]) {
-        container.innerHTML = "<p>You are not logged in.</p>";
-        return;
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
       }
 
-      const friends = userData[username].friends || [];
-      if (friends.length === 0) {
-        container.innerHTML = "<p>You have no friends yet. Go make some!</p>";
-        return;
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/PixelGame Player.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/PixelGame Player.data",
+        frameworkUrl: buildUrl + "/PixelGame Player.framework.js",
+        codeUrl: buildUrl + "/PixelGame Player.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "PixelGamePlayer",
+        productVersion: "0.1",
+        showBanner: unityShowBanner,
+      };
+
+      // By default, Unity keeps WebGL canvas render target size matched with
+      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+      // Set this to false if you want to decouple this synchronization from
+      // happening inside the engine, and you would instead like to size up
+      // the canvas DOM size and WebGL render target sizes yourself.
+      // config.matchWebGLToCanvasSize = false;
+
+      // If you would like all file writes inside Unity Application.persistentDataPath
+      // directory to automatically persist so that the contents are remembered when
+      // the user revisits the site the next time, uncomment the following line:
+      // config.autoSyncPersistentDataPath = true;
+      // This autosyncing is currently not the default behavior to avoid regressing
+      // existing user projects that might rely on the earlier manual
+      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
+      // expected to change.
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        container.className = "unity-mobile";
+        canvas.className = "unity-mobile";
+
+        // To lower canvas resolution on mobile devices to gain some
+        // performance, uncomment the following line:
+        // config.devicePixelRatio = 1;
+
+
+      } else {
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
       }
 
-      container.innerHTML = "";
-      friends.forEach(friend => {
-        const user = userData[friend];
-        const div = document.createElement("div");
-        div.className = "friend-card";
-        div.innerHTML = `
-          <a href="viewprofile.html?user=${friend}">
-            <img src="assets/images/default-avatar.png" alt="${friend}">
-            <div class="username">${friend}</div>
-          </a>
-        `;
-        container.appendChild(div);
-      });
-    }
+      loadingBar.style.display = "block";
 
-    document.addEventListener("DOMContentLoaded", () => {
-      updateNavLinks();
-      updateBitsDisplay();
-      renderFriends();
-    });
-  </script>
-</body>
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
+                loadingBar.style.display = "none";
+                fullscreenButton.onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
+              }).catch((message) => {
+                alert(message);
+              });
+            };
+
+      document.body.appendChild(script);
+
+    </script>
+  </body>
 </html>
