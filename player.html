@@ -1,131 +1,99 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | PixelGamePlayer</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
-  </head>
-  <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
-        </div>
-      </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-webgl-logo"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">PixelGamePlayer</div>
-      </div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PixelGame Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+    }
+    #unity-container {
+      position: absolute;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background: #000;
+    }
+    #unity-canvas {
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+    #unity-loading-bar {
+      position: absolute;
+      left: 0px; right: 0px; top: calc(50% - 10px);
+      height: 20px;
+      background: #555;
+      transform-origin: left center;
+    }
+    #unity-progress-bar {
+      position: absolute;
+      left: 0px; top: 0px;
+      height: 100%;
+      background: #6c2c1f;
+      width: 0%;
+    }
+    #unity-warning {
+      position: absolute;
+      top: 10px; left: 10px;
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 14px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="unity-container">
+    <canvas id="unity-canvas"></canvas>
+    <div id="unity-loading-bar">
+      <div id="unity-progress-bar"></div>
     </div>
-    <script>
+    <div id="unity-warning"></div>
+  </div>
 
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
+  <!-- Make sure these file names match exactly what Unity generated -->
+  <script src="Build/PixelGamePlayer.loader.js"></script>
+  <script>
+    // Grab ?level=... from the URL, then pass it into Unity as Module arguments
+    function getQueryParam(key) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(key);
+    }
 
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-      function unityShowBanner(msg, type) {
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-        }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
+    // Configuration for the Unity instance
+    var unityInstance = UnityLoader.instantiate("unity-container", "Build/PixelGamePlayer.json", {
+      onProgress: function(unityInstance, progress) {
+        // update the loading bar
+        document.getElementById("unity-progress-bar").style.width = (progress * 100) + "%";
       }
+    });
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/PixelGame Player.loader.js";
-      var config = {
-        dataUrl: buildUrl + "/PixelGame Player.data",
-        frameworkUrl: buildUrl + "/PixelGame Player.framework.js",
-        codeUrl: buildUrl + "/PixelGame Player.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "PixelGamePlayer",
-        productVersion: "0.1",
-        showBanner: unityShowBanner,
-      };
-
-      // By default, Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
-
-      // If you would like all file writes inside Unity Application.persistentDataPath
-      // directory to automatically persist so that the contents are remembered when
-      // the user revisits the site the next time, uncomment the following line:
-      // config.autoSyncPersistentDataPath = true;
-      // This autosyncing is currently not the default behavior to avoid regressing
-      // existing user projects that might rely on the earlier manual
-      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
-      // expected to change.
-
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-        container.className = "unity-mobile";
-        canvas.className = "unity-mobile";
-
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
-
-
-      } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
+    // After the instance is loaded, send the ?level parameter to a C# method
+    document.addEventListener("DOMContentLoaded", () => {
+      const levelPath = getQueryParam("level");
+      if (levelPath) {
+        // Wait until Unity is fully initialized, then call a function in C# (via SendMessage)
+        unityInstance.then(function(instance) {
+          // Give Unity a moment to finish setup
+          setTimeout(() => {
+            // Call a static method or a GameObject’s method named “ReceiveLevelPath” in your scene
+            // For example, if you have an invisible GameObject named "BuildLoaderGO" with a script
+            // that has a public method called "ReceiveLevelPath(string level)", you can do:
+            instance.SendMessage("BuildLoaderGO", "ReceiveLevelPath", levelPath);
+          }, 500);
+        });
       }
-
-      loadingBar.style.display = "block";
-
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                loadingBar.style.display = "none";
-                fullscreenButton.onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
-              }).catch((message) => {
-                alert(message);
-              });
-            };
-
-      document.body.appendChild(script);
-
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>
